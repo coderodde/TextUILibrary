@@ -1,5 +1,6 @@
 package com.github.coderodde.text.ui.roddelib;
 
+import com.github.coderodde.text.ui.roddelib.listeners.WidgetMouseClickListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -18,52 +19,6 @@ public abstract class AbstractWidget {
     
     private static final Color DEFAULT_FOREGROUND_COLOR = Color.BLACK;
     private static final Color DEFAULT_BACKGROUND_COLOR = Color.WHITE;
-
-    public void paint() {
-        
-    }
-    
-    public int getWidth() {
-        return width;
-    }
-    
-    public int getHeight() {
-        return height;
-    }
-    
-    public int getStartX() {
-        return parentOffsetX;
-    }
-    
-    public int getStartY() {
-        return parentOffsetY;
-    }
-    
-    public Color getForegroundColor() {
-        return foregroundColor;
-    }
-    
-    public Color getBackgroundColor() {
-        return backgroundColor;
-    }
-    
-    public void setForegroundColor(Color foregroundColor) {
-        this.foregroundColor = 
-                Objects.requireNonNull(
-                        foregroundColor,
-                        "The input foreground color is null.");
-    }
-    
-    public void setBackgroundColor(Color backgroundColor) {
-        this.foregroundColor = 
-                Objects.requireNonNull(
-                        backgroundColor,
-                        "The input background color is null.");
-    }
-    
-    protected void setParent(AbstractWidget parentWidget) {
-        this.parentWidget = parentWidget; // TODO: Check null?
-    }
     
     /**
      * The parent widget.
@@ -119,6 +74,11 @@ public abstract class AbstractWidget {
     protected Color backgroundColor = DEFAULT_BACKGROUND_COLOR;
     
     /**
+     * The listener listening to the mouse click events.
+     */
+    protected WidgetMouseClickListener mouseClickListener;
+    
+    /**
      * Adds an array of 
      * @param firstChildWidget  the first widget to add.
      * @param otherChildWidgets the rest widgets to add.
@@ -139,6 +99,52 @@ public abstract class AbstractWidget {
             throw ex;
         }
     }
+
+    public void paint() {
+        
+    }
+    
+    public int getWidth() {
+        return width;
+    }
+    
+    public int getHeight() {
+        return height;
+    }
+    
+    public int getStartX() {
+        return parentOffsetX;
+    }
+    
+    public int getStartY() {
+        return parentOffsetY;
+    }
+    
+    public Color getForegroundColor() {
+        return foregroundColor;
+    }
+    
+    public Color getBackgroundColor() {
+        return backgroundColor;
+    }
+    
+    public void setForegroundColor(Color foregroundColor) {
+        this.foregroundColor = 
+                Objects.requireNonNull(
+                        foregroundColor,
+                        "The input foreground color is null.");
+    }
+    
+    public void setBackgroundColor(Color backgroundColor) {
+        this.foregroundColor = 
+                Objects.requireNonNull(
+                        backgroundColor,
+                        "The input background color is null.");
+    }
+    
+    public void setMouseClickListener(WidgetMouseClickListener listener) {
+        this.mouseClickListener = listener;
+    }
     
     private void checkWidgetTreeTopology(List<AbstractWidget> widgets) {
         Set<AbstractWidget> visitedSet = new HashSet<>();
@@ -157,5 +163,9 @@ public abstract class AbstractWidget {
         for (AbstractWidget widgetChild : widget.children) {
             dfs(widgetChild, visitedSet);
         }
+    }
+    
+    protected void setParent(AbstractWidget parentWidget) {
+        this.parentWidget = parentWidget; // TODO: Check null?
     }
 }
