@@ -1,6 +1,8 @@
 package com.github.coderodde.text.ui.roddelib;
 
 import com.github.coderodde.text.ui.roddelib.listeners.WidgetMouseClickListener;
+import com.github.coderodde.text.ui.roddelib.listeners.WidgetMouseScrollListener;
+import com.github.coderodde.text.ui.roddelib.listeners.WidgetTouchMoveListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -79,6 +81,16 @@ public abstract class AbstractWidget {
     protected WidgetMouseClickListener mouseClickListener;
     
     /**
+     * the listener listening to the mouse scroll events.
+     */
+    protected WidgetMouseScrollListener mouseScrollListener;
+    
+    /**
+     * The listener listening to the touch move events.
+     */
+    protected WidgetTouchMoveListener touchMoveListener;
+    
+    /**
      * Adds an array of 
      * @param firstChildWidget  the first widget to add.
      * @param otherChildWidgets the rest widgets to add.
@@ -136,7 +148,7 @@ public abstract class AbstractWidget {
     }
     
     public void setBackgroundColor(Color backgroundColor) {
-        this.foregroundColor = 
+        this.backgroundColor = 
                 Objects.requireNonNull(
                         backgroundColor,
                         "The input background color is null.");
@@ -144,6 +156,14 @@ public abstract class AbstractWidget {
     
     public void setMouseClickListener(WidgetMouseClickListener listener) {
         this.mouseClickListener = listener;
+    }
+    
+    public boolean isResizable() {
+        return resizable;
+    }
+    
+    public boolean isMoveable() {
+        return moveable;
     }
     
     private void checkWidgetTreeTopology(List<AbstractWidget> widgets) {

@@ -1,4 +1,4 @@
-package com.github.coderodde.text.ui.roddelib;
+package com.github.coderodde.text.ui.roddelib.impl;
 
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -39,7 +39,7 @@ public interface TextUIWindowMouseListener {
         
     }
     
-    default void onMouseScroll(ScrollEvent e) {
+    default void onMouseScroll(ScrollEvent e, int charX, int charY) {
         
     }
 }

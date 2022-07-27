@@ -1,5 +1,7 @@
-package com.github.coderodde.text.ui.roddelib;
+package com.github.coderodde.text.ui.roddelib.menu;
 
+import com.github.coderodde.text.ui.roddelib.AbstractWidget;
+import com.github.coderodde.text.ui.roddelib.Window;
 import java.util.Objects;
 import javafx.scene.paint.Color;
 
@@ -82,7 +84,15 @@ public class MenuBar extends AbstractWidget {
         addChildren(Objects.requireNonNull(menu, "The input Menu is null."));
     }
     
-    void setParentWindow(Window parentWindow) {
-        this.parentWidget = parentWindow;
+    @Override
+    public void setParent(AbstractWidget windowCandidate) {
+        Objects.requireNonNull(windowCandidate);
+        
+        if (!(windowCandidate instanceof Window)) {
+            throw new IllegalArgumentException(
+                    "Only Window is allowed as a parent widget.");
+        }
+        
+        super.setParent(windowCandidate);
     }
 }

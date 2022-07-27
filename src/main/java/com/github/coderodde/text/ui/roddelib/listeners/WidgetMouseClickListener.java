@@ -10,7 +10,7 @@ import javafx.scene.input.MouseEvent;
  */
 public interface WidgetMouseClickListener {
 
-    default void onClick(MouseEvent mouseEvent, int x, int y) {
+    default void onClick(MouseEvent mouseEvent, int charX, int charY) {
         
     }
 }

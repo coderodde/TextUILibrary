@@ -1,5 +1,6 @@
-package com.github.coderodde.text.ui.roddelib;
+package com.github.coderodde.text.ui.roddelib.menu;
 
+import com.github.coderodde.text.ui.roddelib.AbstractWidget;
 import java.util.Objects;
 
 /**

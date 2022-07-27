@@ -1,10 +1,15 @@
 package com.github.coderodde.text.ui.roddelib;
 
-import com.github.coderodde.ui.TextUIWindow;
+import com.github.coderodde.text.ui.roddelib.menu.MenuBar;
+import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
+import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowTouchListener;
+import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.TouchEvent;
 
 /**
  * 
@@ -29,16 +34,18 @@ public class Window extends AbstractWidget {
     
     public Window(int width, int height, int fontSize) {
         this.windowImpl = new TextUIWindow(width, height, fontSize);
+        this.windowImpl.addTextUIWindowMouseListener(
+                new GlobalWindowMouseListener());
+        
+        initializeDepthBuffer();
     }
     
     public Window(int width, int height) {
         this(width, height, DEFAULT_FONT_SIZE);
-        this.depthBuffer = initializeDepthBuffer();
-        this.windowImpl.addTextUIWindowMouseListener(new GlobalWindowMouseListener());
     }
     
-    private List<AbstractWidget>[][] initializeDepthBuffer() {
-        List<AbstractWidget>[][] depthBuffer = new ArrayList[height][width];
+    private void initializeDepthBuffer() {
+        depthBuffer = new ArrayList[height][width];
         
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -46,8 +53,6 @@ public class Window extends AbstractWidget {
                         new ArrayList<>(DEFAULT_BUFFER_POINT_CAPACITY);
             }
         }
-        
-        return depthBuffer;
     }
 
     public void addMenuBar(MenuBar menuBar) {
@@ -55,7 +60,7 @@ public class Window extends AbstractWidget {
                 Objects.requireNonNull(menuBar, "The input MenuBar is null.");
         
         // Let the MenuBar know its window:
-        menuBar.setParentWindow(this);
+        menuBar.setParent(this);
     }
     
     public void setChar(int charX, int charY, char ch) {
@@ -64,31 +69,59 @@ public class Window extends AbstractWidget {
     }
     
     private final class GlobalWindowMouseListener 
-            implements TextUIWindowMouseListener {
+            implements TextUIWindowMouseListener,
+                       TextUIWindowTouchListener {
         
         private volatile int previousCharX;
         private volatile int previousCharY;
         
-        public GlobalWindowMouseListener() {
-            
-        }
-        
         @Override
-        public void onMouseClick(MouseEvent event, int charX, int charY) {
-            List<AbstractWidget> componentStack = depthBuffer[charY][charX];
-            
-            if (componentStack.isEmpty()) {
-                return;
-            }
-            
-            AbstractWidget eventTargetComponent = 
-                    componentStack.get(componentStack.size() - 1);
+        public void onMouseClick(MouseEvent mouseEvent, int charX, int charY) {
+            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
+                                                                        charY);
             
             if (eventTargetComponent.mouseClickListener != null) {
-                eventTargetComponent.mouseClickListener.onClick(event, 
+                eventTargetComponent.mouseClickListener.onClick(mouseEvent, 
                                                                 charX, 
                                                                 charY);
             }
+        }
+        
+        @Override
+        public void onMouseScroll(ScrollEvent scrollEvent,
+                                  int charX, 
+                                  int charY) {
+            AbstractWidget eventTargetWidget = getTopmostWidgetAtPos(charX, 
+                                                                     charY);
+            
+            if (eventTargetWidget.mouseScrollListener != null) {
+                eventTargetWidget.mouseScrollListener.onScroll(scrollEvent, 
+                                                               charX, 
+                                                               charY);
+            }
+        }
+        
+        @Override
+        public void onTouchMove(TouchEvent touchEvent, int charX, int charY) {
+            AbstractWidget eventTargetWidget = getTopmostWidgetAtPos(charX, 
+                                                                     charY);
+            
+            if (eventTargetWidget.touchMoveListener != null) {
+                eventTargetWidget.touchMoveListener.onTouchMove(touchEvent, 
+                                                                charX, 
+                                                                charY);
+            }
+        }
+        
+        private AbstractWidget getTopmostWidgetAtPos(int charX, int charY) {
+            
+            List<AbstractWidget> widgetStack = depthBuffer[charY][charX];
+            
+            if (widgetStack.isEmpty()) {
+                return null;
+            }
+            
+            return widgetStack.get(widgetStack.size() - 1);
         }
     }
 }

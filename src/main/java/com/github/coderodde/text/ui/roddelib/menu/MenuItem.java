@@ -3,7 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
-package com.github.coderodde.text.ui.roddelib;
+package com.github.coderodde.text.ui.roddelib.menu;
+
+import com.github.coderodde.text.ui.roddelib.AbstractWidget;
 
 /**
  * 
