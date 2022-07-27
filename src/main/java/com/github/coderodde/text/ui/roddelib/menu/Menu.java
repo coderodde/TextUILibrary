@@ -10,6 +10,22 @@ import java.util.Objects;
  * @since 1.6 ()
  */
 public class Menu extends AbstractWidget {
+    
+    private final String menuText;
+    
+    public Menu(String menuText) {
+        Objects.requireNonNull(menuText, "The input menuText is null.");
+        
+        if (menuText.isBlank()) {
+            throw new IllegalArgumentException("The input menuText is blank.");
+        }
+        
+        this.menuText = menuText;
+    }
+    
+    public String getMenuText() {
+        return menuText;
+    }
 
     public void add(Menu nestedMenu) {
         addChildren(

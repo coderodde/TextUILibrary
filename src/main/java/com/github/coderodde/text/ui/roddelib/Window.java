@@ -44,6 +44,12 @@ public class Window extends AbstractWidget {
         this(width, height, DEFAULT_FONT_SIZE);
     }
     
+    public void paint() {
+        if (menuBar != null) {
+            
+        }
+    }
+    
     private void initializeDepthBuffer() {
         depthBuffer = new ArrayList[height][width];
         
