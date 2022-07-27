@@ -2,6 +2,7 @@ package com.github.coderodde.text.ui.roddelib.menu;
 
 import com.github.coderodde.text.ui.roddelib.AbstractWidget;
 import com.github.coderodde.text.ui.roddelib.BorderThickness;
+import static com.github.coderodde.text.ui.roddelib.BorderThickness.DOUBLE;
 import com.github.coderodde.text.ui.roddelib.Window;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
 import java.util.ArrayList;
@@ -16,6 +17,19 @@ import javafx.scene.paint.Color;
  * @since 1.6 (Jul 27, 2022)
  */
 public class MenuBar extends AbstractWidget {
+    
+//    private enum BorderLocations {
+//        TOP_LEFT_CORNER,
+//        TOP_RIGHT_CORNER,
+//        BOTTOM_LEFT_CORNER,
+//        BOTTOM_RIGHT_CORNER,
+//        HORIZONTAL,
+//        VERTICAL,
+//        TRIANGLE_UPWARDS,
+//        TRIANGLE_DOWNWARS,
+//    }
+//    
+//    private static final EnumMap<B
     
     private static final Color DEFAULT_FOREGROUND_COLOR = Color.RED;
     private static final Color DEFAULT_BACKGROUND_COLOR = 
@@ -54,7 +68,6 @@ public class MenuBar extends AbstractWidget {
         this.setForegroundColor(DEFAULT_FOREGROUND_COLOR);
         this.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
     }
-    
     
     public void setOnHoverForegroundColor(Color onHoverForegroundColor) {
         this.onHoverForegroundColor =
@@ -122,17 +135,12 @@ public class MenuBar extends AbstractWidget {
     }
     
     private void paintMenuBar() {
-        if (charMatrix == null || charMatrixDimensionMismatch()) {
-//            createCharMatrix();
-        }
-        
-        
-        
+        buildCharMatrixIfNeeded();
         int parentWindowWidth = parentWidget.getWidth();
         paintMenuBarBorder();
     }
     
-    private boolean charMatrixDimensionMismatch() {
+    private void buildCharMatrixIfNeeded() {
         int requestedHeight =
                 1 + 
                 (!menuBarBorder.getTopHorizontalBorderThickness()
@@ -143,16 +151,19 @@ public class MenuBar extends AbstractWidget {
         
         int requestedWidth = parentWidget.getWidth();
         
-        return requestedHeight != charMatrix.length ||
-               requestedWidth != charMatrix[0].length;
-    }
-    
-    private void buildCharMatrix(int width, int height) {
-        this.charMatrix = new char[height][width];
-        
-        if (!menuBarBorder.getTopHorizontalBorderThickness()
-                          .equals(BorderThickness.NONE)) {
-            buildTopBorder();
+        if (requestedHeight != charMatrix.length ||
+            requestedWidth != charMatrix[0].length) {
+            this.charMatrix = new char[requestedHeight][requestedWidth];
+            
+            if (!menuBarBorder.getTopHorizontalBorderThickness()
+                              .equals(BorderThickness.NONE)) {
+                buildTopBorder();
+            }
+            
+            if (!menuBarBorder.getBottomHorizontalBorderThickness()
+                              .equals(BorderThickness.NONE)) {
+                buildBottomBorder();
+            }
         }
     }
     
@@ -161,11 +172,82 @@ public class MenuBar extends AbstractWidget {
         
         switch (menuBarBorder.getTopHorizontalBorderThickness()) {
             case DOUBLE:
-                borderChar = 'd';
+                borderChar = '\u2550';
                 break;
                 
             case SINGLE:
-                borderChar = 'd';
+                borderChar = '\u2500';
+                break;
+                
+            default:
+                throw new IllegalStateException(
+                    "Not allowed here: " + 
+                            menuBarBorder.getTopHorizontalBorderThickness());
+        }
+        
+        boolean separatorDouble =
+                menuBarBorder.getMenuSeparatorBorderThickness().equals(DOUBLE);
+        
+        // Print the actual bar:
+        for (int x = 1; x < parentWidget.getWidth() - 1; x++) {
+            
+            charMatrix[0][x] = borderChar;
+        }
+        
+        // Print the top left corner:
+        boolean topHorizontalDouble = 
+                menuBarBorder.getTopHorizontalBorderThickness().equals(DOUBLE);
+        
+        boolean leftVerticalDouble = 
+                menuBarBorder.getLeftVerticalBorderThickness().equals(DOUBLE);
+        
+        if (topHorizontalDouble) {
+            if (leftVerticalDouble) {
+                borderChar = '\u2554';
+            } else {
+                borderChar = '\u2552';
+            }
+        } else {
+            if (leftVerticalDouble) {
+                borderChar = '\u2556';
+            }  else {
+                borderChar = '\u250c';
+            }
+        }
+        
+        charMatrix[0][0] = borderChar;
+        
+        // Print the top right corner:
+        boolean rightVerticalDouble = 
+                menuBarBorder.getRightVerticalBorderThickness().equals(DOUBLE);
+        
+        if (topHorizontalDouble) {
+            if (rightVerticalDouble) {
+                
+            } else {
+                
+            }
+        } else {
+            if (rightVerticalDouble) {
+                
+            } else {
+                
+            }
+        }
+        
+        charMatrix[0][width - 1] = borderChar;
+    }
+    
+    private void buildBottomBorder() {
+        char borderChar;
+        
+        switch (menuBarBorder.getTopHorizontalBorderThickness()) {
+            case DOUBLE:
+                borderChar = '\u00cd';
+                break;
+                
+            case SINGLE:
+                borderChar = '\u00c4';
                 break;
                 
             default:
