@@ -18,19 +18,6 @@ import javafx.scene.paint.Color;
  */
 public class MenuBar extends AbstractWidget {
     
-//    private enum BorderLocations {
-//        TOP_LEFT_CORNER,
-//        TOP_RIGHT_CORNER,
-//        BOTTOM_LEFT_CORNER,
-//        BOTTOM_RIGHT_CORNER,
-//        HORIZONTAL,
-//        VERTICAL,
-//        TRIANGLE_UPWARDS,
-//        TRIANGLE_DOWNWARS,
-//    }
-//    
-//    private static final EnumMap<B
-    
     private static final Color DEFAULT_FOREGROUND_COLOR = Color.RED;
     private static final Color DEFAULT_BACKGROUND_COLOR = 
             new Color(100, 100, 100, 1);
@@ -169,14 +156,47 @@ public class MenuBar extends AbstractWidget {
     
     private void buildTopBorder() {
         char borderChar;
+        char separatorIntersectionChar;
+        BorderThickness separatorThickness = 
+                menuBarBorder.getMenuSeparatorBorderThickness();
         
         switch (menuBarBorder.getTopHorizontalBorderThickness()) {
             case DOUBLE:
                 borderChar = '\u2550';
+                
+                switch (separatorThickness) {
+                    case DOUBLE:
+                        separatorIntersectionChar = '\u2566';
+                        break;
+                        
+                    case SINGLE:
+                        separatorIntersectionChar = '\u2564';
+                        break;
+                        
+                    default:
+                        throw new IllegalStateException("Not allowed here: " + 
+                            menuBarBorder.getMenuSeparatorBorderThickness());
+                }
+                
                 break;
                 
             case SINGLE:
                 borderChar = '\u2500';
+                
+                switch (separatorThickness) {
+                    case DOUBLE:
+                        separatorIntersectionChar = '\u2565';
+                        break;
+                        
+                    case SINGLE:
+                        separatorIntersectionChar = '\u252c';
+                        break;
+                        
+                    default:
+                        throw new IllegalStateException("Not allowed here: " + 
+                            menuBarBorder.getMenuSeparatorBorderThickness());
+                }
+                
                 break;
                 
             default:
@@ -185,13 +205,20 @@ public class MenuBar extends AbstractWidget {
                             menuBarBorder.getTopHorizontalBorderThickness());
         }
         
-        boolean separatorDouble =
-                menuBarBorder.getMenuSeparatorBorderThickness().equals(DOUBLE);
+        int currentMenuIndex = 0;
+        int currentPositionInCurrentMenuText = 0;
+        Menu currentMenu = (Menu) children.get(0);
         
         // Print the actual bar:
         for (int x = 1; x < parentWidget.getWidth() - 1; x++) {
-            
-            charMatrix[0][x] = borderChar;
+            if (currentPositionInCurrentMenuText++ == currentMenu.getWidth()) {
+                currentPositionInCurrentMenuText = 0;
+                currentMenuIndex++;
+                currentMenu = (Menu) children.get(currentMenuIndex);
+                charMatrix[0][x] = separatorIntersectionChar;
+            } else {
+                charMatrix[0][x] = borderChar;
+            }
         }
         
         // Print the top left corner:

@@ -26,6 +26,11 @@ public class Menu extends AbstractWidget {
     public String getMenuText() {
         return menuText;
     }
+    
+    @Override
+    public int getWidth() {
+        return menuText.length();
+    }
 
     public void add(Menu nestedMenu) {
         addChildren(
