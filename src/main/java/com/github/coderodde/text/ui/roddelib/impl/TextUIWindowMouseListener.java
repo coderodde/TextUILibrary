@@ -31,7 +31,7 @@ public interface TextUIWindowMouseListener {
         
     }
     
-    default void onMouseMove(MouseEvent e, int charX, int charY) {
+    default void onMouseMoved(MouseEvent e, int charX, int charY) {
         
     }
     

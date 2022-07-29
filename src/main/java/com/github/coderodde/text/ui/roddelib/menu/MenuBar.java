@@ -2,7 +2,6 @@ package com.github.coderodde.text.ui.roddelib.menu;
 
 import com.github.coderodde.text.ui.roddelib.AbstractWidget;
 import com.github.coderodde.text.ui.roddelib.BorderThickness;
-import static com.github.coderodde.text.ui.roddelib.BorderThickness.DOUBLE;
 import com.github.coderodde.text.ui.roddelib.Window;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class MenuBar extends AbstractWidget {
     
     private static final Color DEFAULT_FOREGROUND_COLOR = Color.RED;
     private static final Color DEFAULT_BACKGROUND_COLOR = 
-            new Color(100, 100, 100, 1);
+            new Color(0.3, 0.3, 0.3, 1);
     
     private static final Color DEFAULT_FOREGROUND_COLOR_ON_HOVER =
             DEFAULT_BACKGROUND_COLOR;
@@ -54,6 +53,11 @@ public class MenuBar extends AbstractWidget {
     public MenuBar() {
         this.setForegroundColor(DEFAULT_FOREGROUND_COLOR);
         this.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
+    }
+    
+    public void addMenuBarBorder(MenuBarBorder menuBarBorder) {
+        this.menuBarBorder = menuBarBorder;
+        buildCharMatrixIfNeeded();
     }
     
     public void setOnHoverForegroundColor(Color onHoverForegroundColor) {
@@ -223,10 +227,12 @@ public class MenuBar extends AbstractWidget {
         
         // Print the top left corner:
         boolean topHorizontalDouble = 
-                menuBarBorder.getTopHorizontalBorderThickness().equals(DOUBLE);
+                menuBarBorder.getTopHorizontalBorderThickness()
+                             .equals(BorderThickness.DOUBLE);
         
         boolean leftVerticalDouble = 
-                menuBarBorder.getLeftVerticalBorderThickness().equals(DOUBLE);
+                menuBarBorder.getLeftVerticalBorderThickness()
+                             .equals(BorderThickness.DOUBLE);
         
         if (topHorizontalDouble) {
             if (leftVerticalDouble) {
@@ -246,7 +252,8 @@ public class MenuBar extends AbstractWidget {
         
         // Print the top right corner:
         boolean rightVerticalDouble = 
-                menuBarBorder.getRightVerticalBorderThickness().equals(DOUBLE);
+                menuBarBorder.getRightVerticalBorderThickness()
+                             .equals(BorderThickness.DOUBLE);
         
         if (topHorizontalDouble) {
             if (rightVerticalDouble) {
@@ -289,14 +296,61 @@ public class MenuBar extends AbstractWidget {
     }
     
     private void paintMenuBarBorder() {
+        if (menuBarBorder == null) {
+            paintSimpleMenuBar();
+            return;
+        }
         
+        
+    }
+    
+    private void paintSimpleMenuBar() {
+        int totalWidth = Math.min(getMinimumFittingWidth(), 
+                                  parentWidget.getWidth());
+        
+        List<Menu> menus = getMenuList();
+        
+        int currentMenuIndex = 0;
+        Menu currentMenu = menus.get(0);
+        int currentMenuWidth = currentMenu.getWidth();
+        int currentMenuTextIndex = 0;
+        Window window = (Window) parentWidget;
+        
+        for (int x = 0;
+                x < Math.min(totalWidth, parentWidget.getWidth()); 
+                x++) {
+            char ch;
+            
+            if (x == currentMenuWidth + 1) {
+                ch = ' ';
+                currentMenu = menus.get(++currentMenuIndex);
+                currentMenuWidth = currentMenu.getWidth();
+                currentMenuTextIndex = 0;
+            }
+            
+            ch = currentMenu.getMenuText().charAt(currentMenuTextIndex++);
+            
+            if (currentMenu.hovered()) {
+                window.setForegroundColor(onHoverForegroundColor);
+                window.setBackgroundColor(onHoverBackgroundColor);
+            } else {
+                window.setForegroundColor(foregroundColor);
+                window.setBackgroundColor(backgroundColor);
+            }
+            
+            window.setChar(x, 0, ch);
+        }
     }
     
     private int getMinimumFittingWidth() {
         int width = 0;
         
+        for (AbstractWidget menuWidget : children) {
+            Menu menu = (Menu) menuWidget;
+            width += menu.getWidth();
+        }
         
-        
+        width += children.size() - 1; // n - 1 menu separators.
         return width;
     }
     
@@ -308,11 +362,10 @@ public class MenuBar extends AbstractWidget {
     }
     
     public void addMenu(Menu menu) {
-        addChildren(Objects.requireNonNull(menu, "The input Menu is null."));
+        Objects.requireNonNull(menu, "The input Menu is null.");
+        children.add(menu);
         isDirty = true;
     }
-    
-    
     
     @Override
     public void setParent(AbstractWidget windowCandidate) {
@@ -324,5 +377,15 @@ public class MenuBar extends AbstractWidget {
         }
         
         super.setParent(windowCandidate);
+    }
+    
+    private List<Menu> getMenuList() {
+        List<Menu> menuList = new ArrayList<>(children.size());
+        
+        for (AbstractWidget menuWidget : children) {
+            menuList.add((Menu) menuWidget);
+        }
+        
+        return menuList;
     }
 }

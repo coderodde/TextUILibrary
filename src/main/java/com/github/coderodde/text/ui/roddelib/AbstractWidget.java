@@ -1,8 +1,8 @@
 package com.github.coderodde.text.ui.roddelib;
 
+import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
 import com.github.coderodde.text.ui.roddelib.listeners.WidgetMouseClickListener;
 import com.github.coderodde.text.ui.roddelib.listeners.WidgetMouseScrollListener;
-import com.github.coderodde.text.ui.roddelib.listeners.WidgetTouchMoveListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -76,19 +76,9 @@ public abstract class AbstractWidget {
     protected Color backgroundColor = DEFAULT_BACKGROUND_COLOR;
     
     /**
-     * The listener listening to the mouse click events.
+     * The mouse listener.
      */
-    protected WidgetMouseClickListener mouseClickListener;
-    
-    /**
-     * the listener listening to the mouse scroll events.
-     */
-    protected WidgetMouseScrollListener mouseScrollListener;
-    
-    /**
-     * The listener listening to the touch move events.
-     */
-    protected WidgetTouchMoveListener touchMoveListener;
+    protected TextUIWindowMouseListener mouseListener;
     
     /**
      * Adds an array of 
@@ -154,8 +144,8 @@ public abstract class AbstractWidget {
                         "The input background color is null.");
     }
     
-    public void setMouseClickListener(WidgetMouseClickListener listener) {
-        this.mouseClickListener = listener;
+    public void setMouseClickListener(TextUIWindowMouseListener mouseListener) {
+        this.mouseListener = mouseListener;
     }
     
     public boolean isResizable() {

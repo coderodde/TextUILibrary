@@ -2,14 +2,13 @@ package com.github.coderodde.text.ui.roddelib;
 
 import com.github.coderodde.text.ui.roddelib.menu.MenuBar;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
-import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowTouchListener;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.input.TouchEvent;
 
 /**
  * 
@@ -30,6 +29,8 @@ public class Window extends AbstractWidget {
     
     private TextUIWindow windowImpl;
     
+    private TextUIWindowMouseListener mouseListener;
+    
     private List<AbstractWidget>[][] depthBuffer;
     
     public Window(int width, int height, int fontSize) {
@@ -44,9 +45,17 @@ public class Window extends AbstractWidget {
         this(width, height, DEFAULT_FONT_SIZE);
     }
     
+    public Canvas getWindowImplementation() {
+        return windowImpl;
+    }
+    
+    public void setMouseListener(TextUIWindowMouseListener mouseListener) {
+        this.mouseListener = mouseListener;
+    }
+    
     public void paint() {
         if (menuBar != null) {
-            
+            menuBar.paint(windowImpl);
         }
     }
     
@@ -75,8 +84,7 @@ public class Window extends AbstractWidget {
     }
     
     private final class GlobalWindowMouseListener 
-            implements TextUIWindowMouseListener,
-                       TextUIWindowTouchListener {
+            implements TextUIWindowMouseListener {
         
         private volatile int previousCharX;
         private volatile int previousCharY;
@@ -86,8 +94,88 @@ public class Window extends AbstractWidget {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
             
-            if (eventTargetComponent.mouseClickListener != null) {
-                eventTargetComponent.mouseClickListener.onClick(mouseEvent, 
+            if (eventTargetComponent.mouseListener != null) {
+                eventTargetComponent.mouseListener.onMouseClick(mouseEvent, 
+                                                                charX, 
+                                                                charY);
+            }
+        }
+        
+        @Override
+        public void onMouseEntered(MouseEvent mouseEvent, 
+                                   int charX, 
+                                   int charY) {
+            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
+                                                                        charY);
+            
+            if (eventTargetComponent.mouseListener != null) {
+                eventTargetComponent.mouseListener.onMouseEntered(mouseEvent, 
+                                                                  charX, 
+                                                                  charY);
+            }
+        }
+        
+        @Override
+        public void onMouseExited(MouseEvent mouseEvent, int charX, int charY) {
+            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
+                                                                        charY);
+            
+            if (eventTargetComponent.mouseListener != null) {
+                eventTargetComponent.mouseListener.onMouseExited(mouseEvent, 
+                                                                 charX, 
+                                                                 charY);
+            }
+        }
+        
+        @Override
+        public void onMousePressed(MouseEvent mouseEvent, 
+                                   int charX,
+                                   int charY) {
+            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
+                                                                        charY);
+            
+            if (eventTargetComponent.mouseListener != null) {
+                eventTargetComponent.mouseListener.onMouseClick(mouseEvent, 
+                                                                charX, 
+                                                                charY);
+            }
+        }
+        
+        @Override
+        public void onMouseReleased(MouseEvent mouseEvent, 
+                                   int charX,
+                                   int charY) {
+            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
+                                                                        charY);
+            
+            if (eventTargetComponent.mouseListener != null) {
+                eventTargetComponent.mouseListener.onMouseReleased(mouseEvent, 
+                                                                   charX, 
+                                                                   charY);
+            }
+        }
+        
+        @Override
+        public void onMouseMoved(MouseEvent mouseEvent, int charX, int charY) {
+            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
+                                                                        charY);
+            
+            if (eventTargetComponent.mouseListener != null) {
+                eventTargetComponent.mouseListener.onMouseMoved(mouseEvent, 
+                                                                charX, 
+                                                                charY);
+            }
+        }
+        
+        @Override
+        public void onMouseDragged(MouseEvent mouseEvent, 
+                                   int charX,
+                                   int charY) {
+            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
+                                                                        charY);
+            
+            if (eventTargetComponent.mouseListener != null) {
+                eventTargetComponent.mouseListener.onMouseMoved(mouseEvent, 
                                                                 charX, 
                                                                 charY);
             }
@@ -100,22 +188,10 @@ public class Window extends AbstractWidget {
             AbstractWidget eventTargetWidget = getTopmostWidgetAtPos(charX, 
                                                                      charY);
             
-            if (eventTargetWidget.mouseScrollListener != null) {
-                eventTargetWidget.mouseScrollListener.onScroll(scrollEvent, 
-                                                               charX, 
-                                                               charY);
-            }
-        }
-        
-        @Override
-        public void onTouchMove(TouchEvent touchEvent, int charX, int charY) {
-            AbstractWidget eventTargetWidget = getTopmostWidgetAtPos(charX, 
-                                                                     charY);
-            
-            if (eventTargetWidget.touchMoveListener != null) {
-                eventTargetWidget.touchMoveListener.onTouchMove(touchEvent, 
-                                                                charX, 
-                                                                charY);
+            if (eventTargetWidget.mouseListener != null) {
+                eventTargetWidget.mouseListener.onMouseScroll(scrollEvent, 
+                                                              charX, 
+                                                              charY);
             }
         }
         

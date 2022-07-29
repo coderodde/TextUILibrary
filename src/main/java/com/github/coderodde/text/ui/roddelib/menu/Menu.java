@@ -12,6 +12,7 @@ import java.util.Objects;
 public class Menu extends AbstractWidget {
     
     private final String menuText;
+    private boolean hovered = false;
     
     public Menu(String menuText) {
         Objects.requireNonNull(menuText, "The input menuText is null.");
@@ -62,5 +63,13 @@ public class Menu extends AbstractWidget {
     
     public int getMenuItemCount() {
         return children.size();
+    }
+    
+    public boolean hovered() {
+        return hovered;
+    }
+    
+    public void setHovered(boolean hovered) {
+        this.hovered = hovered;
     }
 }

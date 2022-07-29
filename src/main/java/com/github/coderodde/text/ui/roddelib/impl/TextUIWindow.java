@@ -3,16 +3,15 @@ package com.github.coderodde.text.ui.roddelib.impl;
 import com.github.coderodde.ui.TextUIWindowKeyboardListener;
 import com.sun.javafx.tk.FontMetrics;
 import com.sun.javafx.tk.Toolkit;
+import java.awt.Point;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.input.TouchEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -35,7 +34,7 @@ public class TextUIWindow extends Canvas {
     private static final Color DEFAULT_BLINK_FOREGROUND_COLOR = Color.BLACK;
     private static final char DEFAULT_CHAR = ' ';
     private static final String FONT_NAME = "Monospaced";
-    private static final int DEFAULT_CHAR_DELIMITER_LENGTH = 4;
+    private static final int DEFAULT_CHAR_DELIMITER_LENGTH = 2;
 
     private final int width;
     private final int height;
@@ -46,9 +45,6 @@ public class TextUIWindow extends Canvas {
     private final int charDelimiterLength;
     private int windowTitleBorderThickness;
     private final Set<TextUIWindowMouseListener> mouseMotionListeners = 
-            new HashSet<>();
-    
-    private final Set<TextUIWindowTouchListener> touchMotionListeners = 
             new HashSet<>();
 
     private final Set<TextUIWindowKeyboardListener> keyboardListeners =
@@ -99,7 +95,6 @@ public class TextUIWindow extends Canvas {
         setMouseListeners();
         setMouseMotionListeners();
         setKeyboardListeners();
-        setTouchListeners();
     }
 
     public Color getTextForegroundColor() {
@@ -211,16 +206,6 @@ public class TextUIWindow extends Canvas {
             TextUIWindowMouseListener listener) {
         mouseMotionListeners.remove(listener);
     }
-    
-    public void addTextUIWindowTouchListener(
-            TextUIWindowTouchListener listener) {
-        touchMotionListeners.add(listener);
-    }
-    
-    public void removeTextUIWindowTouchListener(
-            TextUIWindowTouchListener listener) {
-        touchMotionListeners.remove(listener);
-    }
 
     public void addTextUIWindowKeyboardListener(
             TextUIWindowKeyboardListener listener) {
@@ -252,200 +237,116 @@ public class TextUIWindow extends Canvas {
         setKeyboardTypedListener();
     }
     
-    private void setTouchListeners() {
-        this.setOnTouchMoved(new EventHandler<TouchEvent>() {
-            @Override
-            public void handle(TouchEvent touchEvent) {
-                for (TextUIWindowTouchListener listener 
-                        : touchMotionListeners) {
-                    int pixelX = (int) touchEvent.getTouchPoint().getX();
-                    int pixelY = (int) touchEvent.getTouchPoint().getY();
-
-                    int charX = convertPixelXtoCharX(pixelX);
-                    int charY = convertPixelYtoCharY(pixelY);
-                    
-                    System.out.println(charX + ", " + charY);
-                    
-                    listener.onTouchMove(touchEvent, charX, charY);
-                }
-            }
-        });
-    }
-
     private void setKeyboardPressedListener() {
-        this.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                for (TextUIWindowKeyboardListener listener 
-                        : keyboardListeners) {
-                    listener.onKeyPressed(event);
-                }
+        this.setOnKeyPressed((KeyEvent event) -> {
+            for (TextUIWindowKeyboardListener listener
+                    : keyboardListeners) {
+                listener.onKeyPressed(event);
             }
         });
     }
 
     private void setKeyboardReleaseListener() {
-        this.setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                for (TextUIWindowKeyboardListener listener 
-                        : keyboardListeners) {
-                    listener.onKeyReleased(event);
-                }
+        this.setOnKeyReleased((KeyEvent event) -> {
+            for (TextUIWindowKeyboardListener listener
+                    : keyboardListeners) {
+                listener.onKeyReleased(event);
             }
         });
     }
 
     private void setKeyboardTypedListener() {
-        this.addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent event) {
-                for (TextUIWindowKeyboardListener listener : keyboardListeners) {
-                    listener.onKeyTyped(event);
-                }
+        this.addEventFilter(KeyEvent.KEY_TYPED, (KeyEvent event) -> {
+            for (TextUIWindowKeyboardListener listener : keyboardListeners) {
+                listener.onKeyTyped(event);
             }
         });
     }
 
     private void setMouseMovedListener() {
-        this.setOnMouseMoved(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                int pixelX = (int) event.getX();
-                int pixelY = (int) event.getY();
-
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMouseMove(event, charX, charY);
-                }
+        this.setOnMouseMoved((MouseEvent event) -> {
+            Point p = convertMouseEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMouseMoved(event, p.x, p.y);
             }
         });
     }
 
     private void setMouseDraggedListener() {
-        this.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                int pixelX = (int) event.getX();
-                int pixelY = (int) event.getY();
-
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMouseClick(event, charX, charY);
-                }
+        this.setOnMouseDragged((MouseEvent event) -> {
+            Point p = convertMouseEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMouseClick(event, p.x, p.y);
             }
         });
     }
     
     private void setMouseScrollListener() {
-        this.setOnScroll(new EventHandler<ScrollEvent>() {
-            @Override
-            public void handle(ScrollEvent scrollEvent) {
-                int pixelX = (int) scrollEvent.getX();
-                int pixelY = (int) scrollEvent.getY();
-                
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-                
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMouseScroll(scrollEvent, charX, charY);
-                }
+        this.setOnScroll((ScrollEvent event) -> {
+            Point p = convertScrollEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMouseScroll(event, p.x, p.y);
             }
         });
     }
 
     private void setMouseClickedListener() {
-        this.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                int pixelX = (int) event.getX();
-                int pixelY = (int) event.getY();
-
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMouseClick(event, charX, charY);
-                }
+        this.setOnMouseClicked((MouseEvent event) -> {
+            Point p = convertMouseEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMouseClick(event, p.x, p.y);
             }
         });
     }
 
     private void setMouseEnteredListener() {
-        this.setOnMouseEntered(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                int pixelX = (int) event.getX();
-                int pixelY = (int) event.getY();
-
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMouseEntered(event, charX, charY);
-                }
+        this.setOnMouseEntered((MouseEvent event) -> {
+            Point p = convertMouseEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMouseEntered(event, p.x, p.y);
             }
         });
     }
 
     private void setMouseExitedListener() {
-        this.setOnMouseExited(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                int pixelX = (int) event.getX();
-                int pixelY = (int) event.getY();
-
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMouseExited(event, charX, charY);
-                }
+        this.setOnMouseExited((MouseEvent event) -> {
+            Point p = convertMouseEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMouseExited(event, p.x, p.y);
             }
         });
     }
 
     private void setMousePressedListener() {
-        this.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                int pixelX = (int) event.getX();
-                int pixelY = (int) event.getY();
-
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMousePressed(event, charX, charY);
-                }
+        this.setOnMousePressed((MouseEvent event) -> {
+            Point p = convertMouseEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMousePressed(event, p.x, p.y);
             }
         });
     }
 
     private void setMouseReleasedListener() {
-        this.setOnMouseReleased(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                int pixelX = (int) event.getX();
-                int pixelY = (int) event.getY();
-
-                int charX = convertPixelXtoCharX(pixelX);
-                int charY = convertPixelYtoCharY(pixelY);
-
-                for (TextUIWindowMouseListener listener 
-                        : mouseMotionListeners) {
-                    listener.onMouseReleased(event, charX, charY);
-                }
+        this.setOnMouseReleased((MouseEvent event) -> {
+            Point p = convertMouseEventCoordinatsToCharPoint(event);
+            
+            for (TextUIWindowMouseListener listener
+                    : mouseMotionListeners) {
+                listener.onMouseReleased(event, p.x, p.y);
             }
         });
     }
@@ -737,5 +638,29 @@ public class TextUIWindow extends Canvas {
 
     private int getFontHeight() {
         return (int) getFontMetrics().getLineHeight();
+    }
+    
+    private Point convertMouseEventCoordinatsToCharPoint(
+            MouseEvent mouseEvent) {
+        
+        int pixelX = (int) mouseEvent.getX();
+        int pixelY = (int) mouseEvent.getY();
+
+        int charX = convertPixelXtoCharX(pixelX);
+        int charY = convertPixelYtoCharY(pixelY);
+        
+        return new Point(charX, charY);
+    }
+    
+    private Point convertScrollEventCoordinatsToCharPoint(
+            ScrollEvent scrollEvent) {
+        
+        int pixelX = (int) scrollEvent.getX();
+        int pixelY = (int) scrollEvent.getY();
+
+        int charX = convertPixelXtoCharX(pixelX);
+        int charY = convertPixelYtoCharY(pixelY);
+        
+        return new Point(charX, charY);
     }
 }
