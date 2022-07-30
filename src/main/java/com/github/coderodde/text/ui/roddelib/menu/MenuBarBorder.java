@@ -60,6 +60,14 @@ public class MenuBarBorder {
      */
     private Color backgroundColor = DEFAULT_BACKGROUND_COLOR;
     
+    public boolean noActualBorder() {
+        return topHorizontalBorderThickness.equals(BorderThickness.NONE) &&
+               bottomHorizontalBorderThickness.equals(BorderThickness.NONE) &&
+               leftVerticalBorderThickness.equals(BorderThickness.NONE) &&
+               rightVerticalBorderThickness.equals(BorderThickness.NONE) &&
+               menuSeparatorBorderThickness.equals(BorderThickness.NONE);
+    }
+    
     public Color getForegroundColor() {
         return foregroundColor;
     }

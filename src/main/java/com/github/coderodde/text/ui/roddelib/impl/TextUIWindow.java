@@ -280,7 +280,7 @@ public class TextUIWindow extends Canvas {
             
             for (TextUIWindowMouseListener listener
                     : mouseMotionListeners) {
-                listener.onMouseClick(event, p.x, p.y);
+                listener.onMouseDragged(event, p.x, p.y);
             }
         });
     }
@@ -645,6 +645,9 @@ public class TextUIWindow extends Canvas {
         
         int pixelX = (int) mouseEvent.getX();
         int pixelY = (int) mouseEvent.getY();
+        
+        pixelX = normalizePixelX(pixelX);
+        pixelY = normalizePixelY(pixelY);
 
         int charX = convertPixelXtoCharX(pixelX);
         int charY = convertPixelYtoCharY(pixelY);
@@ -662,5 +665,29 @@ public class TextUIWindow extends Canvas {
         int charY = convertPixelYtoCharY(pixelY);
         
         return new Point(charX, charY);
+    }
+    
+    private int normalizePixelX(int x) {
+        if (x < 0) {
+            return 0;
+        }
+        
+        if (x >= (int) getWidth()) {
+            return ((int) getWidth()) - 1;
+        }
+        
+        return x;
+    }
+    
+    private int normalizePixelY(int y) {
+        if (y < 0) {
+            return 0;
+        }
+        
+        if (y >= (int) getHeight()) {
+            return ((int) getHeight()) - 1;
+        }
+        
+        return y;
     }
 }

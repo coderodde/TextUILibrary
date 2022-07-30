@@ -31,6 +31,8 @@ public class MenuBar extends AbstractWidget {
     protected Color onHoverBackgroundColor = DEFAULT_BACKGROUND_COLOR_ON_HOVER;
     
     private char[][] charMatrix = new char[0][0];
+    private Color[][] foregroundColorMatrix;
+    private Color[][] backgroundColorMatrix;
     private boolean isDirty = true;
     
     /**
@@ -132,28 +134,65 @@ public class MenuBar extends AbstractWidget {
     }
     
     private void buildCharMatrixIfNeeded() {
-        int requestedHeight =
-                1 + 
-                (!menuBarBorder.getTopHorizontalBorderThickness()
-                               .equals(BorderThickness.NONE) ? 1 : 0)
-                + 
-                (!menuBarBorder.getBottomHorizontalBorderThickness()
-                               .equals(BorderThickness.NONE) ? 1 : 0);
+        int requestedHeight = 1;
         
-        int requestedWidth = parentWidget.getWidth();
-        
-        if (requestedHeight != charMatrix.length ||
-            requestedWidth != charMatrix[0].length) {
-            this.charMatrix = new char[requestedHeight][requestedWidth];
-            
+        if (menuBarBorder != null) {
             if (!menuBarBorder.getTopHorizontalBorderThickness()
-                              .equals(BorderThickness.NONE)) {
-                buildTopBorder();
+                              .equals(BorderThickness.NONE)){
+                requestedHeight = 2;
             }
             
             if (!menuBarBorder.getBottomHorizontalBorderThickness()
                               .equals(BorderThickness.NONE)) {
-                buildBottomBorder();
+                requestedHeight++;
+            }
+        }
+        
+        int requestedWidth = getMinimumFittingWidth();
+        
+        if (requestedHeight != charMatrix.length ||
+            requestedWidth != charMatrix[0].length) {
+            this.charMatrix = new char[requestedHeight][requestedWidth];
+            this.foregroundColorMatrix = new Color[requestedHeight]
+                                                  [requestedWidth];
+            
+            this.backgroundColorMatrix = new Color[requestedHeight]
+                                                  [requestedWidth];
+            
+            setForegroundColorMatrix();
+            setBackgroundColorMatrix();
+            
+            boolean topBorderPresent;
+            
+            if (menuBarBorder != null &&
+                    !menuBarBorder.getTopHorizontalBorderThickness()
+                              .equals(BorderThickness.NONE)) {
+                buildTopBorder();
+                topBorderPresent = true;
+            } else {
+                topBorderPresent = false;
+            }
+            
+            if (menuBarBorder != null &&
+                    !menuBarBorder.getBottomHorizontalBorderThickness()
+                              .equals(BorderThickness.NONE)) {
+                buildBottomBorder(topBorderPresent ? 2 : 1);
+            }
+        }
+    }
+    
+    private void setForegroundColorMatrix() {
+        for (int y = 0; y < foregroundColorMatrix.length; y++) {
+            for (int x = 0; x < foregroundColorMatrix[0].length; x++) {
+                foregroundColorMatrix[y][x] = foregroundColor;
+            }
+        }
+    }
+    
+    private void setBackgroundColorMatrix() {
+        for (int y = 0; y < backgroundColorMatrix.length; y++) {
+            for (int x = 0; x < backgroundColorMatrix[0].length; x++) {
+                backgroundColorMatrix[y][x] = backgroundColor;
             }
         }
     }
@@ -272,7 +311,7 @@ public class MenuBar extends AbstractWidget {
         charMatrix[0][width - 1] = borderChar;
     }
     
-    private void buildBottomBorder() {
+    private void buildBottomBorder(int y) {
         char borderChar;
         
         switch (menuBarBorder.getTopHorizontalBorderThickness()) {
@@ -291,12 +330,12 @@ public class MenuBar extends AbstractWidget {
         }
         
         for (int x = 1; x < parentWidget.getWidth() - 1; x++) {
-            charMatrix[0][x] = borderChar;
+            charMatrix[y][x] = borderChar;
         }
     }
     
     private void paintMenuBarBorder() {
-        if (menuBarBorder == null) {
+        if (menuBarBorder == null || menuBarBorder.noActualBorder()) {
             paintSimpleMenuBar();
             return;
         }
@@ -305,6 +344,31 @@ public class MenuBar extends AbstractWidget {
     }
     
     private void paintSimpleMenuBar() {
+        buildCharMatrixIfNeeded();
+        
+        int index = 0;
+        
+        for (AbstractWidget menuWidget : children) {
+            Menu menu = (Menu) menuWidget;
+            paintSimpleMenuBarMenu(menu, index);
+            index += menu.getWidth() + 1;
+        }
+    }
+    
+    private void paintSimpleMenuBarMenu(Menu menu, int index) {  
+        TextUIWindow window = ((Window) parentWidget).getWindowImplementation();
+        
+        window.setForegroundColor(foregroundColor);
+        window.setBackgroundColor(backgroundColor);
+        
+        for (int x = scrollX + index; 
+                x < Math.min(scrollX + menu.getWidth(), window.getGridWidth());
+                x++) {
+            window.setChar(x, 0, charMatrix[0][x]);
+        }
+    }
+    
+    private void paintSimpleMenuBarOld() {
         int totalWidth = Math.min(getMinimumFittingWidth(), 
                                   parentWidget.getWidth());
         

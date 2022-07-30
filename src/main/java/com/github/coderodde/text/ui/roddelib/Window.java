@@ -38,6 +38,9 @@ public class Window extends AbstractWidget {
         this.windowImpl.addTextUIWindowMouseListener(
                 new GlobalWindowMouseListener());
         
+        this.width = windowImpl.getGridWidth();
+        this.height = windowImpl.getGridHeight();
+        
         initializeDepthBuffer();
     }
     
@@ -45,7 +48,7 @@ public class Window extends AbstractWidget {
         this(width, height, DEFAULT_FONT_SIZE);
     }
     
-    public Canvas getWindowImplementation() {
+    public TextUIWindow getWindowImplementation() {
         return windowImpl;
     }
     
@@ -94,6 +97,10 @@ public class Window extends AbstractWidget {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
             
+            if (eventTargetComponent == null) {
+                return;
+            }
+            
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseClick(mouseEvent, 
                                                                 charX, 
@@ -108,6 +115,10 @@ public class Window extends AbstractWidget {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
             
+            if (eventTargetComponent == null) {
+                return;
+            }
+            
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseEntered(mouseEvent, 
                                                                   charX, 
@@ -119,6 +130,10 @@ public class Window extends AbstractWidget {
         public void onMouseExited(MouseEvent mouseEvent, int charX, int charY) {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
+            
+            if (eventTargetComponent == null) {
+                return;
+            }
             
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseExited(mouseEvent, 
@@ -134,6 +149,10 @@ public class Window extends AbstractWidget {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
             
+            if (eventTargetComponent == null) {
+                return;
+            }
+            
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseClick(mouseEvent, 
                                                                 charX, 
@@ -148,6 +167,10 @@ public class Window extends AbstractWidget {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
             
+            if (eventTargetComponent == null) {
+                return;
+            }
+            
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseReleased(mouseEvent, 
                                                                    charX, 
@@ -159,6 +182,10 @@ public class Window extends AbstractWidget {
         public void onMouseMoved(MouseEvent mouseEvent, int charX, int charY) {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
+            
+            if (eventTargetComponent == null) {
+                return;
+            }
             
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseMoved(mouseEvent, 
@@ -174,6 +201,10 @@ public class Window extends AbstractWidget {
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
             
+            if (eventTargetComponent == null) {
+                return;
+            }
+            
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseMoved(mouseEvent, 
                                                                 charX, 
@@ -187,6 +218,10 @@ public class Window extends AbstractWidget {
                                   int charY) {
             AbstractWidget eventTargetWidget = getTopmostWidgetAtPos(charX, 
                                                                      charY);
+            
+            if (eventTargetWidget == null) {
+                return;
+            }
             
             if (eventTargetWidget.mouseListener != null) {
                 eventTargetWidget.mouseListener.onMouseScroll(scrollEvent, 
