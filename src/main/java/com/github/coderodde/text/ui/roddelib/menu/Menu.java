@@ -24,6 +24,21 @@ public class Menu extends AbstractWidget {
         this.menuText = menuText;
     }
     
+    @Override
+    public String toString() {
+        return "[Menu = '" + menuText + "']";
+    }
+    
+    public boolean contanisPoint(int charX, int charY) {
+        int parentOffsetXBegin = parentWidget.getStartX();
+        int parentOffsetYBegin = parentWidget.getStartY();
+        int parentOffsetXEnd = parentOffsetXBegin + getWidth();
+        int parentOffsetYEnd = parentOffsetYBegin + getHeight();
+        
+        return parentOffsetXBegin <= charX && charX < parentOffsetXEnd &&
+               parentOffsetYBegin <= charY && charY < parentOffsetYEnd;
+    }
+    
     public String getMenuText() {
         return menuText;
     }

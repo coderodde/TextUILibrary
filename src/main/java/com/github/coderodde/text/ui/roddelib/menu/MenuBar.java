@@ -4,6 +4,8 @@ import com.github.coderodde.text.ui.roddelib.AbstractWidget;
 import com.github.coderodde.text.ui.roddelib.BorderThickness;
 import com.github.coderodde.text.ui.roddelib.Window;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
+import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,15 +19,14 @@ import javafx.scene.paint.Color;
  */
 public class MenuBar extends AbstractWidget {
     
-    private static final Color DEFAULT_FOREGROUND_COLOR = Color.RED;
+    private static final Color DEFAULT_FOREGROUND_COLOR = Color.WHITE;
     private static final Color DEFAULT_BACKGROUND_COLOR = 
             new Color(0.3, 0.3, 0.3, 1);
     
-    private static final Color DEFAULT_FOREGROUND_COLOR_ON_HOVER =
-            DEFAULT_BACKGROUND_COLOR;
+    private static final Color DEFAULT_FOREGROUND_COLOR_ON_HOVER = Color.RED;
 
     private static final Color DEFAULT_BACKGROUND_COLOR_ON_HOVER = 
-            DEFAULT_FOREGROUND_COLOR;
+            DEFAULT_BACKGROUND_COLOR;
     
     protected Color onHoverForegroundColor = DEFAULT_FOREGROUND_COLOR_ON_HOVER;
     protected Color onHoverBackgroundColor = DEFAULT_BACKGROUND_COLOR_ON_HOVER;
@@ -34,6 +35,8 @@ public class MenuBar extends AbstractWidget {
     private Color[][] foregroundColorMatrix;
     private Color[][] backgroundColorMatrix;
     private boolean isDirty = true;
+    private final MenuBarMouseListenerImpl mouseListenerImpl = 
+            new MenuBarMouseListenerImpl();
     
     /**
      * The menu bar border.
@@ -161,6 +164,7 @@ public class MenuBar extends AbstractWidget {
             
             setForegroundColorMatrix();
             setBackgroundColorMatrix();
+            setTextsCharMatrix();
             
             boolean topBorderPresent;
             
@@ -178,6 +182,100 @@ public class MenuBar extends AbstractWidget {
                               .equals(BorderThickness.NONE)) {
                 buildBottomBorder(topBorderPresent ? 2 : 1);
             }
+        }
+    }
+    
+    private void setTextsCharMatrix() {
+        boolean noSeparator =
+                menuBarBorder == null || menuBarBorder.noActualBorder();
+        
+        int menuLineY;
+        
+        if (menuBarBorder == null 
+                || menuBarBorder.getTopHorizontalBorderThickness()
+                                .equals(BorderThickness.NONE)) {
+            menuLineY = 0;
+        } else {
+            menuLineY = 1;
+        }
+        
+        char separatorChar;
+        
+        
+        
+        BorderThickness separatorBorderThickness = null;
+        
+        if (menuBarBorder != null) {
+            separatorBorderThickness =
+                    menuBarBorder.getMenuSeparatorBorderThickness();
+        }
+        
+        if (noSeparator 
+                || separatorBorderThickness == null
+                || separatorBorderThickness.equals(BorderThickness.NONE)) {
+            separatorChar = ' ';
+        } else if (separatorBorderThickness.equals(BorderThickness.SINGLE)) {
+            separatorChar = '\u2502';
+        } else if (separatorBorderThickness.equals(BorderThickness.DOUBLE)) {
+            separatorChar = '\u2551';
+        } else {
+            throw new IllegalStateException(
+                    "Unknown BorderThickness: " + separatorBorderThickness);
+        }
+        
+        TextUIWindow window = ((Window) parentWidget).getWindowImplementation();
+        int charsPrinted = 0;
+        int iterations = 0;
+        
+        for (AbstractWidget menuWidget : children) {
+            Menu menu = (Menu) menuWidget;
+            Point mousePoint = mouseListenerImpl.getCurrentCursorPoint();
+            boolean hasHover = menu.contanisPoint(mousePoint.x, mousePoint.y);
+            boolean isLast = iterations == children.size() - 1;
+            
+            charsPrinted += printMenuToCharMatrix(window, 
+                                      menu, 
+                                      separatorChar, 
+                                      charsPrinted, 
+                                      menuLineY,
+                                      isLast,
+                                      hasHover);
+            
+            if (charsPrinted >= getWidth()) {
+                break;
+            }
+            
+            iterations++;
+        }
+    }
+    
+    private int printMenuToCharMatrix(TextUIWindow window, 
+                                      Menu menu, 
+                                      char separatorChar, 
+                                      int offset,
+                                      int lineY,
+                                      boolean isLast,
+                                      boolean hasHover) {
+        int x;
+        int charIndex = 0;
+        
+        for (x = offset; x < offset + menu.getWidth(); x++) {
+            charMatrix[lineY][x] = menu.getMenuText().charAt(charIndex++);
+            
+            if (hasHover) {
+                foregroundColorMatrix[lineY][x] = onHoverForegroundColor;
+                backgroundColorMatrix[lineY][x] = onHoverBackgroundColor;
+            } else {
+                foregroundColorMatrix[lineY][x] = foregroundColor;
+                backgroundColorMatrix[lineY][x] = backgroundColor;
+            }
+        }
+        
+        if (!isLast) {
+            window.setChar(x, lineY, separatorChar);
+            return menu.getWidth() + 1;
+        } else {
+            return menu.getWidth();
         }
     }
     
@@ -451,5 +549,19 @@ public class MenuBar extends AbstractWidget {
         }
         
         return menuList;
+    }
+    
+    private final class MenuBarMouseListenerImpl 
+            implements TextUIWindowMouseListener {
+        
+        private volatile int previousCursorX;
+        private volatile int previousCursorY;
+        
+        private volatile int currentCursorX;
+        private volatile int currentCursorY;
+        
+        Point getCurrentCursorPoint() {
+            return new Point(currentCursorX, currentCursorY);
+        }
     }
 }

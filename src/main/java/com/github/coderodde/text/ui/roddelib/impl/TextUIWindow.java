@@ -365,7 +365,8 @@ public class TextUIWindow extends Canvas {
 
     public void repaint() {
         GraphicsContext gc = getGraphicsContext2D();
-
+        gc.setFont(font);
+        
         for (int y = 0; y < height; y++) {
             repaintRow(gc, y);
         }
@@ -420,8 +421,6 @@ public class TextUIWindow extends Canvas {
     private void repaintCellForeground(GraphicsContext gc,
                                        int charX, 
                                        int charY) {
-        gc.setFont(font);
-
         if (cursorGrid[charY][charX]) {
             gc.setFill(blinkCursorForegroundColor);
         } else {

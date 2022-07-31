@@ -6,7 +6,7 @@ import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javafx.scene.canvas.Canvas;
+import javafx.application.Platform;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 
@@ -60,6 +60,10 @@ public class Window extends AbstractWidget {
         if (menuBar != null) {
             menuBar.paint(windowImpl);
         }
+        
+        Platform.runLater(() -> {
+            windowImpl.repaint();
+        });
     }
     
     private void initializeDepthBuffer() {
