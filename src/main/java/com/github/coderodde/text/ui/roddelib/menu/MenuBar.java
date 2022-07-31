@@ -132,7 +132,6 @@ public class MenuBar extends AbstractWidget {
     
     private void paintMenuBar() {
         buildCharMatrixIfNeeded();
-        int parentWindowWidth = parentWidget.getWidth();
         paintMenuBarBorder();
     }
     
@@ -200,9 +199,6 @@ public class MenuBar extends AbstractWidget {
         }
         
         char separatorChar;
-        
-        
-        
         BorderThickness separatorBorderThickness = null;
         
         if (menuBarBorder != null) {
@@ -226,6 +222,7 @@ public class MenuBar extends AbstractWidget {
         TextUIWindow window = ((Window) parentWidget).getWindowImplementation();
         int charsPrinted = 0;
         int iterations = 0;
+        int windowWidth = window.getGridWidth();
         
         for (AbstractWidget menuWidget : children) {
             Menu menu = (Menu) menuWidget;
@@ -241,7 +238,7 @@ public class MenuBar extends AbstractWidget {
                                       isLast,
                                       hasHover);
             
-            if (charsPrinted >= getWidth()) {
+            if (charsPrinted >= windowWidth) {
                 break;
             }
             
@@ -445,24 +442,36 @@ public class MenuBar extends AbstractWidget {
         buildCharMatrixIfNeeded();
         
         int index = 0;
+        int iterations = 0;
+        boolean isLast = false;
         
         for (AbstractWidget menuWidget : children) {
+            if (iterations == children.size() - 1) {
+                isLast = true;
+            }
+            
             Menu menu = (Menu) menuWidget;
-            paintSimpleMenuBarMenu(menu, index);
+            paintSimpleMenuBarMenu(menu, index, isLast);
             index += menu.getWidth() + 1;
+            iterations++;
         }
     }
     
-    private void paintSimpleMenuBarMenu(Menu menu, int index) {  
+    private void paintSimpleMenuBarMenu(Menu menu, int index, boolean isLast) {  
         TextUIWindow window = ((Window) parentWidget).getWindowImplementation();
         
         window.setForegroundColor(foregroundColor);
         window.setBackgroundColor(backgroundColor);
         
-        for (int x = scrollX + index; 
-                x < Math.min(scrollX + menu.getWidth(), window.getGridWidth());
-                x++) {
+        int endIndex = Math.min(scrollX + index + menu.getWidth(),
+                                window.getGridWidth());
+        
+        for (int x = scrollX + index; x < endIndex; x++) {
             window.setChar(x, 0, charMatrix[0][x]);
+        }
+        
+        if (!isLast) {
+            window.setChar(endIndex, 0, ' ');
         }
     }
     
@@ -526,6 +535,7 @@ public class MenuBar extends AbstractWidget {
     public void addMenu(Menu menu) {
         Objects.requireNonNull(menu, "The input Menu is null.");
         children.add(menu);
+        menu.setParent(this);
         isDirty = true;
     }
     

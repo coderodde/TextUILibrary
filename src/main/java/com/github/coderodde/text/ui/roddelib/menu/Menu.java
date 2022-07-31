@@ -29,6 +29,13 @@ public class Menu extends AbstractWidget {
         return "[Menu = '" + menuText + "']";
     }
     
+    public void setParent(MenuBar menuBar) {
+        this.parentWidget = 
+                Objects.requireNonNull(
+                        menuBar, 
+                        "The input MenuBar is null.");
+    }
+    
     public boolean contanisPoint(int charX, int charY) {
         int parentOffsetXBegin = parentWidget.getStartX();
         int parentOffsetYBegin = parentWidget.getStartY();
@@ -87,4 +94,6 @@ public class Menu extends AbstractWidget {
     public void setHovered(boolean hovered) {
         this.hovered = hovered;
     }
+    
+    
 }
