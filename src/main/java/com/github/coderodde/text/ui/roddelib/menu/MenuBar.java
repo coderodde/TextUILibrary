@@ -54,7 +54,7 @@ public class MenuBar extends AbstractWidget {
      * The maximum value for {@code scrollX}. At this value, the menu bar is 
      * aligned to the right end.
      */
-    private int maximumScrollY;
+    private int maximumScrollX;
     
     public MenuBar() {
         this.setForegroundColor(DEFAULT_FOREGROUND_COLOR);
@@ -100,7 +100,7 @@ public class MenuBar extends AbstractWidget {
         }
         
         int totalWidth = getTotalWidth();
-        maximumScrollY = Math.max(0, totalWidth - windowImpl.getGridWidth());
+        maximumScrollX = Math.max(0, totalWidth - windowImpl.getGridWidth());
         
         paintMenuBar();
         isDirty = false;
@@ -157,6 +157,9 @@ public class MenuBar extends AbstractWidget {
             requestedWidth != charMatrix[0].length) {
             
             Window window = (Window) parentWidget;
+            this.width = Math.min(window.getWidth(), requestedWidth);
+            this.height = 
+                    1 + (menuBarBorder == null ? 0 : menuBarBorder.getHeight());
             
             removeCurrentMenuBarFromDepthBuffer(window);
             
@@ -601,10 +604,46 @@ public class MenuBar extends AbstractWidget {
         public void onMouseScroll(ScrollEvent scrollEvent,
                                   int charX, 
                                   int charY) {
-            System.out.println(scrollEvent.getEventType().getName() + ", " +
-                               scrollEvent.getTotalDeltaX() + ", " +
-                               scrollEvent.getTotalDeltaY() + ", x = " +
-                               charX + ", y = " + charY);
+            
+            if (MenuBar.this.containsPoint(charX, charY)) {
+                
+                int deltaX = 
+                        (int)(scrollEvent.getDeltaX() * 
+                              scrollEvent.getMultiplierX());
+                
+                int deltaY = 
+                        (int) (scrollEvent.getDeltaY() * 
+                               scrollEvent.getMultiplierY());
+                
+                System.out.println("dx = " + deltaX + ", dy = " + deltaY);
+                
+                Window window = (Window) parentWidget;
+                int fontCharWidth = window.getFontCharWidth();
+                
+                boolean doHorizontalScroll =
+                        Math.abs(deltaX) >= Math.abs(deltaY);
+                
+                int charsToScroll;
+                
+                if (doHorizontalScroll) {
+                    charsToScroll = deltaX / fontCharWidth;
+                } else {
+                    charsToScroll = deltaY / fontCharWidth;
+                }
+                
+                scrollX += charsToScroll;
+                normalizeMaximumScrollX();
+                System.out.println("norm: " + scrollX + " of " + maximumScrollX);
+                window.paint();
+            }
+        }
+    }
+    
+    private void normalizeMaximumScrollX() {
+        if (scrollX < 0) {
+            scrollX = 0;
+        } else if (scrollX > maximumScrollX) {
+            scrollX = maximumScrollX;
         }
     }
 }

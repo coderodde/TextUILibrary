@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 
 public class TestApp extends Application {
 
-    private final Window window = new Window(80, 48);
+    private final Window window = new Window(14, 20);
     
     public static void main(String[] args) {
         launch(args);

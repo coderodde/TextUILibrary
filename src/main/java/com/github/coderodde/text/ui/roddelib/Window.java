@@ -56,6 +56,10 @@ public class Window extends AbstractWidget {
         this.mouseListener = mouseListener;
     }
     
+    public int getFontCharWidth() {
+        return this.windowImpl.getFontCharWidth();
+    }
+    
     public void paint() {
         if (menuBar != null) {
             menuBar.paint(windowImpl);
@@ -262,7 +266,7 @@ public class Window extends AbstractWidget {
         
         private AbstractWidget getTopmostWidgetAtPos(int charX, int charY) {
             
-            List<AbstractWidget> widgetStack = depthBuffer[charY][charX];
+        List<AbstractWidget> widgetStack = depthBuffer[charY][charX];
             
             if (widgetStack.isEmpty()) {
                 return null;

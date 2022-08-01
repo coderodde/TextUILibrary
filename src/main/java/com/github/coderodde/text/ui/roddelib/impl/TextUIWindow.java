@@ -155,6 +155,10 @@ public class TextUIWindow extends Canvas {
                                        "The input color is null.");
     }
 
+    public int getFontCharWidth() {
+        return fontCharWidth + charDelimiterLength;
+    }
+    
     public int getGridWidth() {
         return width;
     }

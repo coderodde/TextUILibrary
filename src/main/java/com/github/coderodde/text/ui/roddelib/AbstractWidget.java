@@ -156,6 +156,16 @@ public abstract class AbstractWidget {
         return moveable;
     }
     
+    public boolean containsPoint(int charX, int charY) {
+        int startOffsetX = getStartX();
+        int startOffsetY = getStartY();
+        int endOffsetX = startOffsetX + getWidth();
+        int endOffsetY = startOffsetY + getHeight();
+        
+        return startOffsetX <= charX && charX < endOffsetX &&
+               startOffsetY <= charY && charY < endOffsetY;
+    }
+    
     private void checkWidgetTreeTopology(List<AbstractWidget> widgets) {
         Set<AbstractWidget> visitedSet = new HashSet<>();
         

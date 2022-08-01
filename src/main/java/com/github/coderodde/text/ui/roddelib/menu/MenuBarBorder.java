@@ -77,9 +77,11 @@ public class MenuBarBorder {
     }
     
     public int getHeight() {
-        int height = 0;
+        int height;
         
-        if (!topHorizontalBorderThickness.equals(BorderThickness.NONE)) {
+        if (topHorizontalBorderThickness.equals(BorderThickness.NONE)) {
+            height = 0;
+        } else {
             height = 1;
         }
         
