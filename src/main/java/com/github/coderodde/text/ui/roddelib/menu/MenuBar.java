@@ -256,7 +256,8 @@ public class MenuBar extends AbstractWidget {
             boolean hasHover = menu.contanisPoint(mousePoint.x, mousePoint.y);
             boolean isLast = iterations == children.size() - 1;
             
-            charsPrinted += printMenuToCharMatrix(window, 
+            charsPrinted += printMenuToCharMatrix(
+                                      window, 
                                       menu, 
                                       separatorChar, 
                                       charsPrinted, 
@@ -315,6 +316,27 @@ public class MenuBar extends AbstractWidget {
             for (int x = 0; x < backgroundColorMatrix[0].length; x++) {
                 backgroundColorMatrix[y][x] = backgroundColor;
             }
+        }
+    }
+    
+    private void printToWindowImpl() {
+        if (menuBarBorder == null || menuBarBorder.noActualBorder()) {
+            printSimpleMenuBar();
+            return;
+        }
+    }
+    
+    private void printSimpleMenuBar() {
+        TextUIWindow windowImpl = 
+                ((Window) parentWidget).getWindowImplementation();
+        
+        int matrixX = scrollX;
+        int windowX = 0;
+        
+        for (int i = 0; i < getWidth(); i++, matrixX++, windowX++) {
+            windowImpl.setForegroundColor(foregroundColorMatrix[0][matrixX]);
+            windowImpl.setBackgroundColor(backgroundColorMatrix[0][matrixX]);
+            windowImpl.setChar(windowX, 0, charMatrix[0][matrixX]);
         }
     }
     
@@ -634,6 +656,8 @@ public class MenuBar extends AbstractWidget {
                 scrollX += charsToScroll;
                 normalizeMaximumScrollX();
                 System.out.println("norm: " + scrollX + " of " + maximumScrollX);
+//                MenuBar.this.setTextsCharMatrix();
+                MenuBar.this.printSimpleMenuBar();
                 window.paint();
             }
         }
