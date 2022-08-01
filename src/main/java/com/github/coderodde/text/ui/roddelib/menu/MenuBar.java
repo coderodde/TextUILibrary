@@ -9,6 +9,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 
 /**
@@ -21,14 +22,14 @@ public class MenuBar extends AbstractWidget {
     
     private static final Color DEFAULT_FOREGROUND_COLOR = Color.WHITE;
     private static final Color DEFAULT_BACKGROUND_COLOR = 
-            new Color(0.3, 0.3, 0.3, 1);
+            new Color(0.55, 0.55, 0.55, 1);
     
     private static final Color DEFAULT_FOREGROUND_COLOR_ON_HOVER = Color.RED;
 
     private static final Color DEFAULT_BACKGROUND_COLOR_ON_HOVER = 
             DEFAULT_BACKGROUND_COLOR;
     
-    protected Color onHoverForegroundColor = DEFAULT_FOREGROUND_COLOR_ON_HOVER;
+    protected Color onHoverForegroundColor = Color.ORANGE;
     protected Color onHoverBackgroundColor = DEFAULT_BACKGROUND_COLOR_ON_HOVER;
     
     private char[][] charMatrix = new char[0][0];
@@ -58,10 +59,10 @@ public class MenuBar extends AbstractWidget {
     public MenuBar() {
         this.setForegroundColor(DEFAULT_FOREGROUND_COLOR);
         this.setBackgroundColor(DEFAULT_BACKGROUND_COLOR);
+        super.mouseListener = new MenuBarMouseListenerImpl();
     }
     
     public void addMenuBarBorder(MenuBarBorder menuBarBorder) {
-        this.menuBarBorder = menuBarBorder;
         buildCharMatrixIfNeeded();
     }
     
@@ -154,6 +155,11 @@ public class MenuBar extends AbstractWidget {
         
         if (requestedHeight != charMatrix.length ||
             requestedWidth != charMatrix[0].length) {
+            
+            Window window = (Window) parentWidget;
+            
+            removeCurrentMenuBarFromDepthBuffer(window);
+            
             this.charMatrix = new char[requestedHeight][requestedWidth];
             this.foregroundColorMatrix = new Color[requestedHeight]
                                                   [requestedWidth];
@@ -181,7 +187,24 @@ public class MenuBar extends AbstractWidget {
                               .equals(BorderThickness.NONE)) {
                 buildBottomBorder(topBorderPresent ? 2 : 1);
             }
+           
+            int endY = 1;
+            
+            if (menuBarBorder != null) {
+                endY += menuBarBorder.getHeight();
+            }
+            
+            int endX = Math.min(requestedWidth, parentWidget.getWidth());
+            
+            window.addMenuBarToDepthBuffer(this, endX, endY);
         }
+    }
+    
+    private void removeCurrentMenuBarFromDepthBuffer(Window window) {
+        int height = 
+                1 + (menuBarBorder == null ? 0 : menuBarBorder.getHeight());
+        
+        window.removeMenuBarFromDepthBuffer(height, this);
     }
     
     private void setTextsCharMatrix() {
@@ -572,6 +595,16 @@ public class MenuBar extends AbstractWidget {
         
         Point getCurrentCursorPoint() {
             return new Point(currentCursorX, currentCursorY);
+        }
+        
+        @Override
+        public void onMouseScroll(ScrollEvent scrollEvent,
+                                  int charX, 
+                                  int charY) {
+            System.out.println(scrollEvent.getEventType().getName() + ", " +
+                               scrollEvent.getTotalDeltaX() + ", " +
+                               scrollEvent.getTotalDeltaY() + ", x = " +
+                               charX + ", y = " + charY);
         }
     }
 }

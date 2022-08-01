@@ -78,6 +78,10 @@ public class Window extends AbstractWidget {
     }
 
     public void addMenuBar(MenuBar menuBar) {
+        if (this.menuBar != null) {
+            throw new IllegalStateException("Cannot add a MenuBar twice.");
+        }
+        
         this.menuBar =
                 Objects.requireNonNull(menuBar, "The input MenuBar is null.");
         
@@ -88,6 +92,28 @@ public class Window extends AbstractWidget {
     public void setChar(int charX, int charY, char ch) {
         
         windowImpl.setChar(charX, charY, ch);
+    }
+    
+    public void addMenuBarToDepthBuffer(MenuBar menuBar, 
+                                        int width, 
+                                        int height) {
+        for (int y = 0; y < height; y++) {
+            List<AbstractWidget>[] row = depthBuffer[y];
+            
+            for (int x = 0; x < width; x++) {
+                row[x].add(menuBar);
+            }
+        }
+    }
+    
+    public void removeMenuBarFromDepthBuffer(int menuBarHeight,
+                                             MenuBar menuBar) {
+        
+        for (int y = 0; y < menuBarHeight; y++) {
+            for (int x = 0; x < width; x++) {
+                depthBuffer[y][x].remove(menuBar);
+            }
+        }
     }
     
     private final class GlobalWindowMouseListener 

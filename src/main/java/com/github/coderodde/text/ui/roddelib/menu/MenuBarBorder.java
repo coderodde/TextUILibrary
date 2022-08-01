@@ -76,6 +76,20 @@ public class MenuBarBorder {
         return backgroundColor;
     }
     
+    public int getHeight() {
+        int height = 0;
+        
+        if (!topHorizontalBorderThickness.equals(BorderThickness.NONE)) {
+            height = 1;
+        }
+        
+        if (!bottomHorizontalBorderThickness.equals(BorderThickness.NONE)) {
+            height++;
+        }
+        
+        return height;
+    }
+    
     public void setForegroundColor(Color foregroundColor) {
         this.foregroundColor = 
                 Objects.requireNonNull(
