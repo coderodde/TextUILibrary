@@ -248,7 +248,6 @@ public class MenuBar extends AbstractWidget {
         TextUIWindow window = ((Window) parentWidget).getWindowImplementation();
         int charsPrinted = 0;
         int iterations = 0;
-        int windowWidth = window.getGridWidth();
         
         for (AbstractWidget menuWidget : children) {
             Menu menu = (Menu) menuWidget;
@@ -264,11 +263,6 @@ public class MenuBar extends AbstractWidget {
                                       menuLineY,
                                       isLast,
                                       hasHover);
-            
-            if (charsPrinted >= windowWidth) {
-                break;
-            }
-            
             iterations++;
         }
     }
@@ -316,13 +310,6 @@ public class MenuBar extends AbstractWidget {
             for (int x = 0; x < backgroundColorMatrix[0].length; x++) {
                 backgroundColorMatrix[y][x] = backgroundColor;
             }
-        }
-    }
-    
-    private void printToWindowImpl() {
-        if (menuBarBorder == null || menuBarBorder.noActualBorder()) {
-            printSimpleMenuBar();
-            return;
         }
     }
     
@@ -637,8 +624,6 @@ public class MenuBar extends AbstractWidget {
                         (int) (scrollEvent.getDeltaY() * 
                                scrollEvent.getMultiplierY());
                 
-                System.out.println("dx = " + deltaX + ", dy = " + deltaY);
-                
                 Window window = (Window) parentWidget;
                 int fontCharWidth = window.getFontCharWidth();
                 
@@ -655,8 +640,6 @@ public class MenuBar extends AbstractWidget {
                 
                 scrollX += charsToScroll;
                 normalizeMaximumScrollX();
-                System.out.println("norm: " + scrollX + " of " + maximumScrollX);
-//                MenuBar.this.setTextsCharMatrix();
                 MenuBar.this.printSimpleMenuBar();
                 window.paint();
             }
