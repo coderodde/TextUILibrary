@@ -1,8 +1,11 @@
 package com.github.coderodde.text.ui.roddelib;
 
+import static com.github.coderodde.text.ui.roddelib.BorderThickness.NONE;
 import com.github.coderodde.text.ui.roddelib.menu.MenuBar;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
+import com.github.coderodde.text.ui.roddelib.menu.Menu;
+import com.github.coderodde.text.ui.roddelib.menu.MenuBarBorder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -91,6 +94,89 @@ public class Window extends AbstractWidget {
         
         // Let the MenuBar know its window:
         menuBar.setParent(this);
+        setMenusParents();
+        addMenusToDepthBuffer();
+    }
+    
+    public void addMenusToDepthBuffer() {
+        int offsetX;
+        int offsetY;
+        MenuBarBorder menuBarBorder = menuBar.getMenuBarBorder();
+        
+        if (menuBarBorder != null 
+                && !menuBarBorder.getLeftVerticalBorderThickness()
+                                 .equals(NONE)) {
+            offsetX = 1;
+        } else {
+            offsetX = 0;
+        }
+        
+        if (menuBarBorder != null 
+                && !menuBarBorder.getTopHorizontalBorderThickness()
+                                 .equals(NONE)) {
+            offsetY = 1;
+        } else {
+            offsetY = 0;
+        }
+        
+        int totalMenusWidth = getMenusTotalWidth();
+        int actualWidth = Math.min(width, totalMenusWidth);
+        int charsProcessed = 0;
+        
+        for (AbstractWidget menuWidget : menuBar.children) {
+            charsProcessed += 
+                    addMenuToDepthBuffer(
+                            (Menu) menuWidget, 
+                            offsetX + charsProcessed, 
+                            offsetY, 
+                            charsProcessed,
+                            actualWidth);
+            
+            charsProcessed++; // Omit the separaotr.
+            
+            if (charsProcessed >= actualWidth) {
+                break;
+            }
+        }
+    }
+    
+    private void setMenusParents() {
+        for (AbstractWidget menuWidget : menuBar.children) {
+            menuWidget.setParent(menuBar);
+        }
+    }
+    
+    private int addMenuToDepthBuffer(Menu menu, 
+                                     int x, 
+                                     int y, 
+                                     int charsProcessed, 
+                                     int width) {
+        int menuWidth = menu.getWidth();
+        int endX = Math.min(x + menuWidth, width);
+        
+        for (int xx = charsProcessed; xx < endX; xx++) {
+            depthBuffer[y][xx].add(menu);
+        }
+        
+        return endX - x;
+    }
+    
+    private int getMenusTotalWidth() {
+        if (menuBar == null) {
+            throw new IllegalStateException("Window has no MenuBar.");
+        }
+        
+        if (menuBar.isEmpty()) {
+            return 0;
+        }
+        
+        int totalMenusWidth = 0;
+        
+        for (AbstractWidget menuWidget : menuBar.children) {
+            totalMenusWidth += menuWidget.getWidth() + 1;
+        }
+        
+        return totalMenusWidth - 1;
     }
     
     public void setChar(int charX, int charY, char ch) {
@@ -107,6 +193,29 @@ public class Window extends AbstractWidget {
             for (int x = 0; x < width; x++) {
                 row[x].add(menuBar);
             }
+        }
+    }
+    
+    public MenuBar getMenuBar() {
+        return menuBar;
+    }
+    
+    public void addMenuToDepthBuffer(Menu menu) {
+        int xEnd = Math.min(menu.getStartX() + menu.getWidth(), width);
+        int startX = 0;
+        int y;
+        
+        MenuBarBorder menuBarBorder = menuBar.getMenuBarBorder();
+        
+        if (menuBarBorder != null && 
+                !menuBarBorder.getTopHorizontalBorderThickness().equals(NONE)) {
+            y = 1;
+        } else {
+            y = 0;
+        }
+        
+        for (int x = startX; x < xEnd; x++) {
+            depthBuffer[y][x].add(menu);
         }
     }
     

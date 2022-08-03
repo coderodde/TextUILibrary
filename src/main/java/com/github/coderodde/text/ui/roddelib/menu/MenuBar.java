@@ -2,6 +2,7 @@ package com.github.coderodde.text.ui.roddelib.menu;
 
 import com.github.coderodde.text.ui.roddelib.AbstractWidget;
 import com.github.coderodde.text.ui.roddelib.BorderThickness;
+import static com.github.coderodde.text.ui.roddelib.BorderThickness.NONE;
 import com.github.coderodde.text.ui.roddelib.Window;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
@@ -9,6 +10,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 
@@ -24,12 +26,12 @@ public class MenuBar extends AbstractWidget {
     private static final Color DEFAULT_BACKGROUND_COLOR = 
             new Color(0.55, 0.55, 0.55, 1);
     
-    private static final Color DEFAULT_FOREGROUND_COLOR_ON_HOVER = Color.RED;
+    private static final Color DEFAULT_FOREGROUND_COLOR_ON_HOVER = Color.ORANGE;
 
     private static final Color DEFAULT_BACKGROUND_COLOR_ON_HOVER = 
             DEFAULT_BACKGROUND_COLOR;
     
-    protected Color onHoverForegroundColor = Color.ORANGE;
+    protected Color onHoverForegroundColor = DEFAULT_FOREGROUND_COLOR_ON_HOVER;
     protected Color onHoverBackgroundColor = DEFAULT_BACKGROUND_COLOR_ON_HOVER;
     
     private char[][] charMatrix = new char[0][0];
@@ -129,6 +131,14 @@ public class MenuBar extends AbstractWidget {
         }
         
         return width;
+    }
+    
+    public MenuBarBorder getMenuBarBorder() {
+        return menuBarBorder;
+    }
+    
+    public boolean isEmpty() {
+        return children.isEmpty();
     }
     
     private void paintMenuBar() {
@@ -569,9 +579,20 @@ public class MenuBar extends AbstractWidget {
     
     public void addMenu(Menu menu) {
         Objects.requireNonNull(menu, "The input Menu is null.");
+        
+        int startX = getTotalMenusLength() + 1;
+        int startY;
+         
+        if (menuBarBorder == null || 
+                menuBarBorder.getTopHorizontalBorderThickness().equals(NONE)) {
+            startY = 0;
+        } else {
+            startY = 1;
+        }
+        
+        menu.setParentOffsetX(startX);
+        menu.setParentOffsetY(startY);
         children.add(menu);
-        menu.setParent(this);
-        isDirty = true;
     }
     
     @Override
@@ -584,6 +605,8 @@ public class MenuBar extends AbstractWidget {
         }
         
         super.setParent(windowCandidate);
+        Window window = (Window) windowCandidate;
+        window.addMenusToDepthBuffer();
     }
     
     private List<Menu> getMenuList() {
@@ -594,6 +617,20 @@ public class MenuBar extends AbstractWidget {
         }
         
         return menuList;
+    }
+    
+    private int getTotalMenusLength() {
+        if (children.isEmpty()) {
+            return 1;
+        }
+        
+        int totalMenusLength = 0;
+        
+        for (AbstractWidget widget : children) {
+            totalMenusLength += widget.getWidth() + 1;
+        }
+        
+        return totalMenusLength - 1;
     }
     
     private final class MenuBarMouseListenerImpl 
@@ -610,21 +647,82 @@ public class MenuBar extends AbstractWidget {
         }
         
         @Override
+        public void onMouseClick(MouseEvent mouseEvent, int charX, int charY) {
+            
+            previousCursorX = currentCursorX;
+            previousCursorY = currentCursorY;
+            
+            currentCursorX = charX;
+            currentCursorY = charY;
+            
+        }
+        
+        private Menu getMenuViaPoint(int charX, int charY) {
+            for (AbstractWidget widget : children) {
+                Menu menu = (Menu) widget;
+                
+                if (menu.containsPoint(charX, charY)) {
+                    return menu;
+                }
+            }
+            
+            return null;
+        }
+        
+        @Override
+        public void onMouseMoved(MouseEvent mouseEvent, int charX, int charY) {
+            if (!MenuBar.this.containsPoint(charX, charY)) {
+                return;
+            }
+            
+            Window window = (Window) parentWidget;
+            Menu targetMenu = getMenuViaPoint(charX, charY);
+            targetMenu.setHovered(true);
+            
+            window.getWindowImplementation()
+                  .setForegroundColor(onHoverForegroundColor);
+            
+            window.getWindowImplementation()
+                  .setBackgroundColor(onHoverBackgroundColor);
+            
+            paintMenuText(window, targetMenu, 0);
+            window.paint();
+        }
+        
+        private void paintMenuText(Window window, Menu menu, int y) {
+            int windowWidth = window.getWindowImplementation().getGridWidth();
+            int xEnd = Math.min(menu.getStartX() + menu.getWidth(),
+                                windowWidth);
+            
+            TextUIWindow windowImpl = window.getWindowImplementation();
+            
+            for (int x = menu.getStartX(), i = 0; x < xEnd; x++, i++) {
+                windowImpl.setChar(x, y, menu.getMenuText().charAt(i));
+            }
+        }
+        
+        @Override
         public void onMouseScroll(ScrollEvent scrollEvent,
                                   int charX, 
                                   int charY) {
             
             if (MenuBar.this.containsPoint(charX, charY)) {
+                Window window = (Window) parentWidget;
                 
                 int deltaX = 
                         (int)(scrollEvent.getDeltaX() * 
-                              scrollEvent.getMultiplierX());
+                              scrollEvent.getMultiplierX() /
+                              window.getWindowImplementation()
+                                    .getFontCharWidth());
                 
                 int deltaY = 
                         (int) (scrollEvent.getDeltaY() * 
-                               scrollEvent.getMultiplierY());
+                               scrollEvent.getMultiplierY() / 
+                               window.getWindowImplementation()
+                                     .getFontCharHeight());
                 
-                Window window = (Window) parentWidget;
+                System.out.println("dx = " + deltaX + ", dy = " + deltaY);
+                
                 int fontCharWidth = window.getFontCharWidth();
                 
                 boolean doHorizontalScroll =
@@ -639,14 +737,14 @@ public class MenuBar extends AbstractWidget {
                 }
                 
                 scrollX += charsToScroll;
-                normalizeMaximumScrollX();
+                normalizeScrollX();
                 MenuBar.this.printSimpleMenuBar();
                 window.paint();
             }
         }
     }
     
-    private void normalizeMaximumScrollX() {
+    private void normalizeScrollX() {
         if (scrollX < 0) {
             scrollX = 0;
         } else if (scrollX > maximumScrollX) {

@@ -159,6 +159,10 @@ public class TextUIWindow extends Canvas {
         return fontCharWidth + charDelimiterLength;
     }
     
+    public int getFontCharHeight() {
+        return fontCharHeight;
+    }
+    
     public int getGridWidth() {
         return width;
     }

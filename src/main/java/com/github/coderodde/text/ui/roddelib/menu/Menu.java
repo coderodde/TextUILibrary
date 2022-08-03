@@ -22,6 +22,8 @@ public class Menu extends AbstractWidget {
         }
         
         this.menuText = menuText;
+        this.width = menuText.length();
+        this.height = 1;
     }
     
     @Override

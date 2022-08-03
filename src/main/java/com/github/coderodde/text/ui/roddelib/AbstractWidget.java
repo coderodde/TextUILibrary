@@ -1,8 +1,6 @@
 package com.github.coderodde.text.ui.roddelib;
 
 import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
-import com.github.coderodde.text.ui.roddelib.listeners.WidgetMouseClickListener;
-import com.github.coderodde.text.ui.roddelib.listeners.WidgetMouseScrollListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -146,6 +144,18 @@ public abstract class AbstractWidget {
     
     public void setMouseClickListener(TextUIWindowMouseListener mouseListener) {
         this.mouseListener = mouseListener;
+    }
+    
+    public void setParentOffsetX(int parentOffsetX) {
+        this.parentOffsetX = parentOffsetX;
+    }
+    
+    public void setParentOffsetY(int parentOffsetY) {
+        this.parentOffsetY = parentOffsetY;
+    }
+    
+    public void setWidth(int width) {
+        this.width = width;
     }
     
     public boolean isResizable() {
