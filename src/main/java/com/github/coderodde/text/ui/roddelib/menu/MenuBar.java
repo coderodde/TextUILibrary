@@ -4,8 +4,7 @@ import com.github.coderodde.text.ui.roddelib.AbstractWidget;
 import com.github.coderodde.text.ui.roddelib.BorderThickness;
 import static com.github.coderodde.text.ui.roddelib.BorderThickness.NONE;
 import com.github.coderodde.text.ui.roddelib.Window;
-import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
-import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
+import com.github.coderodde.text.ui.roddelib.impl.TextCanvas;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +12,7 @@ import java.util.Objects;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
+import com.github.coderodde.text.ui.roddelib.impl.TextCanvasMouseListener;
 
 /**
  * 
@@ -90,7 +90,7 @@ public class MenuBar extends AbstractWidget {
         return onHoverBackgroundColor;
     }
     
-    public void paint(TextUIWindow windowImpl) {
+    public void paint(TextCanvas windowImpl) {
         if (!isDirty) {
             return;
         }
@@ -255,7 +255,7 @@ public class MenuBar extends AbstractWidget {
                     "Unknown BorderThickness: " + separatorBorderThickness);
         }
         
-        TextUIWindow window = ((Window) parentWidget).getWindowImplementation();
+        TextCanvas window = ((Window) parentWidget).getTextCanvas();
         int charsPrinted = 0;
         int iterations = 0;
         
@@ -277,7 +277,7 @@ public class MenuBar extends AbstractWidget {
         }
     }
     
-    private int printMenuToCharMatrix(TextUIWindow window, 
+    private int printMenuToCharMatrix(TextCanvas window, 
                                       Menu menu, 
                                       char separatorChar, 
                                       int offset,
@@ -324,8 +324,8 @@ public class MenuBar extends AbstractWidget {
     }
     
     private void printSimpleMenuBar() {
-        TextUIWindow windowImpl = 
-                ((Window) parentWidget).getWindowImplementation();
+        TextCanvas windowImpl = 
+                ((Window) parentWidget).getTextCanvas();
         
         int matrixX = scrollX;
         int windowX = 0;
@@ -503,7 +503,7 @@ public class MenuBar extends AbstractWidget {
     }
     
     private void paintSimpleMenuBarMenu(Menu menu, int index, boolean isLast) {  
-        TextUIWindow window = ((Window) parentWidget).getWindowImplementation();
+        TextCanvas window = ((Window) parentWidget).getTextCanvas();
         
         window.setForegroundColor(foregroundColor);
         window.setBackgroundColor(backgroundColor);
@@ -580,7 +580,7 @@ public class MenuBar extends AbstractWidget {
     public void addMenu(Menu menu) {
         Objects.requireNonNull(menu, "The input Menu is null.");
         
-        int startX = getTotalMenusLength() + 1;
+        int startX = getTotalMenusLength();
         int startY;
          
         if (menuBarBorder == null || 
@@ -621,7 +621,7 @@ public class MenuBar extends AbstractWidget {
     
     private int getTotalMenusLength() {
         if (children.isEmpty()) {
-            return 1;
+            return 0;
         }
         
         int totalMenusLength = 0;
@@ -634,10 +634,13 @@ public class MenuBar extends AbstractWidget {
     }
     
     private final class MenuBarMouseListenerImpl 
-            implements TextUIWindowMouseListener {
+            implements TextCanvasMouseListener {
         
-        private volatile int previousCursorX;
-        private volatile int previousCursorY;
+        private static final int NONINIT_CURSOR_X = -1;
+        private static final int NONINIT_CURSOR_Y = -1;
+        
+        private volatile int previousCursorX = NONINIT_CURSOR_X;
+        private volatile int previousCursorY = NONINIT_CURSOR_Y;
         
         private volatile int currentCursorX;
         private volatile int currentCursorY;
@@ -669,35 +672,86 @@ public class MenuBar extends AbstractWidget {
             return null;
         }
         
+        private void handlePreviousCursor() {
+            if (previousCursorX == NONINIT_CURSOR_X || 
+                    previousCursorY == NONINIT_CURSOR_Y) {
+                return;
+            }
+            
+            Menu targetMenu = getMenuViaPoint(previousCursorX, 
+                                              previousCursorY);
+            
+            if (targetMenu == null) {
+                return;
+            }
+            
+            
+        }
+        
+        @Override
+        public void onMouseExited(MouseEvent mouseEvent, int charX, int charY) {
+//            if (!MenuBar.this.containsPoint(charX, charY)) {
+//                return;
+//            }
+            
+            System.out.println("exited: x = " + charX + ", y = " + charY);
+            Window window = (Window) parentWidget;
+
+            window.getTextCanvas().setForegroundColor(foregroundColor);
+            window.getTextCanvas().setBackgroundColor(backgroundColor);
+
+            for (AbstractWidget menuWidget : children) {
+                Menu menu = (Menu) menuWidget;
+                menu.setHovered(false);
+                paintMenuText(window, menu, 0);
+            }
+
+            window.paint();
+        }
+        
         @Override
         public void onMouseMoved(MouseEvent mouseEvent, int charX, int charY) {
+//            handlePreviousCursor();
+            
             if (!MenuBar.this.containsPoint(charX, charY)) {
                 return;
             }
             
-            Window window = (Window) parentWidget;
             Menu targetMenu = getMenuViaPoint(charX, charY);
+            
+            if (targetMenu == null) {
+                return;
+            }
+            
+            Window window = (Window) parentWidget;
             targetMenu.setHovered(true);
             
-            window.getWindowImplementation()
-                  .setForegroundColor(onHoverForegroundColor);
-            
-            window.getWindowImplementation()
-                  .setBackgroundColor(onHoverBackgroundColor);
+            window.getTextCanvas().setForegroundColor(onHoverForegroundColor);
+            window.getTextCanvas().setBackgroundColor(onHoverBackgroundColor);
             
             paintMenuText(window, targetMenu, 0);
             window.paint();
+            
+            previousCursorX = charX;
+            previousCursorY = charY;
         }
         
         private void paintMenuText(Window window, Menu menu, int y) {
-            int windowWidth = window.getWindowImplementation().getGridWidth();
-            int xEnd = Math.min(menu.getStartX() + menu.getWidth(),
-                                windowWidth);
+            int windowWidth = window.getTextCanvas().getGridWidth();
+            int xStart = menu.getStartX() + 
+                        (children.get(0).equals(menu) ? 0 : 1);
             
-            TextUIWindow windowImpl = window.getWindowImplementation();
+            int xEnd = 
+                    Math.min(
+                            menu.getStartX() 
+                                    + menu.getWidth() 
+                                    + (children.get(0).equals(menu) ? 0 : 1),
+                            windowWidth);
             
-            for (int x = menu.getStartX(), i = 0; x < xEnd; x++, i++) {
-                windowImpl.setChar(x, y, menu.getMenuText().charAt(i));
+            TextCanvas canvas = window.getTextCanvas();
+            
+            for (int x = xStart, i = 0; x < xEnd; x++, i++) {
+                canvas.setChar(x, y, menu.getMenuText().charAt(i));
             }
         }
         
@@ -712,16 +766,14 @@ public class MenuBar extends AbstractWidget {
                 int deltaX = 
                         (int)(scrollEvent.getDeltaX() * 
                               scrollEvent.getMultiplierX() /
-                              window.getWindowImplementation()
+                              window.getTextCanvas()
                                     .getFontCharWidth());
                 
                 int deltaY = 
                         (int) (scrollEvent.getDeltaY() * 
                                scrollEvent.getMultiplierY() / 
-                               window.getWindowImplementation()
+                               window.getTextCanvas()
                                      .getFontCharHeight());
-                
-                System.out.println("dx = " + deltaX + ", dy = " + deltaY);
                 
                 int fontCharWidth = window.getFontCharWidth();
                 

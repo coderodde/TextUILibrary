@@ -26,7 +26,7 @@ public class TestApp extends Application {
         window.addMenuBar(menuBar);
         
         Group root = new Group();
-        root.getChildren().add(window.getWindowImplementation());
+        root.getChildren().add(window.getTextCanvas());
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.show();

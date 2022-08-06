@@ -2,8 +2,7 @@ package com.github.coderodde.text.ui.roddelib;
 
 import static com.github.coderodde.text.ui.roddelib.BorderThickness.NONE;
 import com.github.coderodde.text.ui.roddelib.menu.MenuBar;
-import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
-import com.github.coderodde.text.ui.roddelib.impl.TextUIWindow;
+import com.github.coderodde.text.ui.roddelib.impl.TextCanvas;
 import com.github.coderodde.text.ui.roddelib.menu.Menu;
 import com.github.coderodde.text.ui.roddelib.menu.MenuBarBorder;
 import java.util.ArrayList;
@@ -12,6 +11,7 @@ import java.util.Objects;
 import javafx.application.Platform;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import com.github.coderodde.text.ui.roddelib.impl.TextCanvasMouseListener;
 
 /**
  * 
@@ -30,14 +30,14 @@ public class Window extends AbstractWidget {
     // The bottom tabifier of this window:
     private BottomTabifierWidget bottomTabifierWidget;
     
-    private TextUIWindow windowImpl;
+    private TextCanvas windowImpl;
     
-    private TextUIWindowMouseListener mouseListener;
+    private TextCanvasMouseListener mouseListener;
     
     private List<AbstractWidget>[][] depthBuffer;
     
     public Window(int width, int height, int fontSize) {
-        this.windowImpl = new TextUIWindow(width, height, fontSize);
+        this.windowImpl = new TextCanvas(width, height, fontSize);
         this.windowImpl.addTextUIWindowMouseListener(
                 new GlobalWindowMouseListener());
         
@@ -51,11 +51,11 @@ public class Window extends AbstractWidget {
         this(width, height, DEFAULT_FONT_SIZE);
     }
     
-    public TextUIWindow getWindowImplementation() {
+    public TextCanvas getTextCanvas() {
         return windowImpl;
     }
     
-    public void setMouseListener(TextUIWindowMouseListener mouseListener) {
+    public void setMouseListener(TextCanvasMouseListener mouseListener) {
         this.mouseListener = mouseListener;
     }
     
@@ -230,10 +230,12 @@ public class Window extends AbstractWidget {
     }
     
     private final class GlobalWindowMouseListener 
-            implements TextUIWindowMouseListener {
+            implements TextCanvasMouseListener {
         
-        private volatile int previousCharX;
-        private volatile int previousCharY;
+        private static final int ILLEGAL_CHAR_COORDINATE = -1;
+        
+        private volatile int previousCharX = ILLEGAL_CHAR_COORDINATE;
+        private volatile int previousCharY = ILLEGAL_CHAR_COORDINATE;
         
         @Override
         public void onMouseClick(MouseEvent mouseEvent, int charX, int charY) {
@@ -271,8 +273,13 @@ public class Window extends AbstractWidget {
         
         @Override
         public void onMouseExited(MouseEvent mouseEvent, int charX, int charY) {
-            AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
-                                                                        charY);
+            if (previousCharX == ILLEGAL_CHAR_COORDINATE) {
+                return;
+            }
+            
+            AbstractWidget eventTargetComponent = 
+                    getTopmostWidgetAtPos(previousCharX, 
+                                          previousCharY);
             
             if (eventTargetComponent == null) {
                 return;
@@ -280,8 +287,8 @@ public class Window extends AbstractWidget {
             
             if (eventTargetComponent.mouseListener != null) {
                 eventTargetComponent.mouseListener.onMouseExited(mouseEvent, 
-                                                                 charX, 
-                                                                 charY);
+                                                                 previousCharX, 
+                                                                 previousCharY);
             }
         }
         
@@ -323,6 +330,25 @@ public class Window extends AbstractWidget {
         
         @Override
         public void onMouseMoved(MouseEvent mouseEvent, int charX, int charY) {
+            if (previousCharX != ILLEGAL_CHAR_COORDINATE &&
+                previousCharY != ILLEGAL_CHAR_COORDINATE) {
+                
+                AbstractWidget oldTargetComponent = 
+                        getTopmostWidgetAtPos(previousCharX,
+                                              previousCharY);
+                
+                if (oldTargetComponent != null && 
+                    oldTargetComponent.mouseListener != null) {
+                    oldTargetComponent.mouseListener
+                                      .onMouseExited(mouseEvent,
+                                                     previousCharX, 
+                                                     previousCharY);
+                }
+            }
+            
+            previousCharX = charX;
+            previousCharY = charY;
+            
             AbstractWidget eventTargetComponent = getTopmostWidgetAtPos(charX, 
                                                                         charY);
             
@@ -374,8 +400,7 @@ public class Window extends AbstractWidget {
         }
         
         private AbstractWidget getTopmostWidgetAtPos(int charX, int charY) {
-            
-        List<AbstractWidget> widgetStack = depthBuffer[charY][charX];
+            List<AbstractWidget> widgetStack = depthBuffer[charY][charX];
             
             if (widgetStack.isEmpty()) {
                 return null;

@@ -23,7 +23,7 @@ import javafx.scene.text.FontWeight;
  * @version 1.6 (Jul 24, 2022)
  * @since 1.6 (Jul 24, 2022)
  */
-public class TextUIWindow extends Canvas {
+public class TextCanvas extends Canvas {
 
     private static final int MINIMUM_WIDTH = 1;
     private static final int MINIMUM_HEIGHT = 1;
@@ -44,7 +44,7 @@ public class TextUIWindow extends Canvas {
     private final int fontCharHeight;
     private final int charDelimiterLength;
     private int windowTitleBorderThickness;
-    private final Set<TextUIWindowMouseListener> mouseMotionListeners = 
+    private final Set<TextCanvasMouseListener> mouseMotionListeners = 
             new HashSet<>();
 
     private final Set<TextUIWindowKeyboardListener> keyboardListeners =
@@ -59,11 +59,11 @@ public class TextUIWindow extends Canvas {
     private Color blinkCursorBackgroundColor = DEFAULT_BLINK_BACKGROUND_COLOR;
     private Color blinkCursorForegroundColor = DEFAULT_BLINK_FOREGROUND_COLOR;
 
-    public TextUIWindow(int width, int height, int fontSize) {
+    public TextCanvas(int width, int height, int fontSize) {
         this(width, height, fontSize, DEFAULT_CHAR_DELIMITER_LENGTH);
     }
 
-    public TextUIWindow(int width, 
+    public TextCanvas(int width, 
                         int height, 
                         int fontSize, 
                         int charDelimiterLength) {
@@ -206,12 +206,12 @@ public class TextUIWindow extends Canvas {
     }
 
     public void addTextUIWindowMouseListener(
-            TextUIWindowMouseListener listener) {
+            TextCanvasMouseListener listener) {
         mouseMotionListeners.add(listener);
     }
 
     public void removeTextUIWindowMouseListener(
-            TextUIWindowMouseListener listener) {
+            TextCanvasMouseListener listener) {
         mouseMotionListeners.remove(listener);
     }
 
@@ -275,7 +275,7 @@ public class TextUIWindow extends Canvas {
         this.setOnMouseMoved((MouseEvent event) -> {
             Point p = convertMouseEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMouseMoved(event, p.x, p.y);
             }
@@ -286,7 +286,7 @@ public class TextUIWindow extends Canvas {
         this.setOnMouseDragged((MouseEvent event) -> {
             Point p = convertMouseEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMouseDragged(event, p.x, p.y);
             }
@@ -297,7 +297,7 @@ public class TextUIWindow extends Canvas {
         this.setOnScroll((ScrollEvent event) -> {
             Point p = convertScrollEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMouseScroll(event, p.x, p.y);
             }
@@ -308,7 +308,7 @@ public class TextUIWindow extends Canvas {
         this.setOnMouseClicked((MouseEvent event) -> {
             Point p = convertMouseEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMouseClick(event, p.x, p.y);
             }
@@ -319,7 +319,7 @@ public class TextUIWindow extends Canvas {
         this.setOnMouseEntered((MouseEvent event) -> {
             Point p = convertMouseEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMouseEntered(event, p.x, p.y);
             }
@@ -330,7 +330,7 @@ public class TextUIWindow extends Canvas {
         this.setOnMouseExited((MouseEvent event) -> {
             Point p = convertMouseEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMouseExited(event, p.x, p.y);
             }
@@ -341,7 +341,7 @@ public class TextUIWindow extends Canvas {
         this.setOnMousePressed((MouseEvent event) -> {
             Point p = convertMouseEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMousePressed(event, p.x, p.y);
             }
@@ -352,7 +352,7 @@ public class TextUIWindow extends Canvas {
         this.setOnMouseReleased((MouseEvent event) -> {
             Point p = convertMouseEventCoordinatsToCharPoint(event);
             
-            for (TextUIWindowMouseListener listener
+            for (TextCanvasMouseListener listener
                     : mouseMotionListeners) {
                 listener.onMouseReleased(event, p.x, p.y);
             }

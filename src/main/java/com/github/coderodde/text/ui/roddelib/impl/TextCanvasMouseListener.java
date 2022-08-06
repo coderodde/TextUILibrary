@@ -9,7 +9,7 @@ import javafx.scene.input.ScrollEvent;
  * @version 1.6 ()
  * @since 1.6 ()
  */
-public interface TextUIWindowMouseListener {
+public interface TextCanvasMouseListener {
 
     default void onMouseClick(MouseEvent e, int charX, int charY) {
         

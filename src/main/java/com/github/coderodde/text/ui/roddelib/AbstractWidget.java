@@ -1,6 +1,5 @@
 package com.github.coderodde.text.ui.roddelib;
 
-import com.github.coderodde.text.ui.roddelib.impl.TextUIWindowMouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javafx.scene.paint.Color;
+import com.github.coderodde.text.ui.roddelib.impl.TextCanvasMouseListener;
 
 /**
  * 
@@ -76,7 +76,7 @@ public abstract class AbstractWidget {
     /**
      * The mouse listener.
      */
-    protected TextUIWindowMouseListener mouseListener;
+    protected TextCanvasMouseListener mouseListener;
     
     /**
      * Adds an array of 
@@ -142,7 +142,7 @@ public abstract class AbstractWidget {
                         "The input background color is null.");
     }
     
-    public void setMouseClickListener(TextUIWindowMouseListener mouseListener) {
+    public void setMouseClickListener(TextCanvasMouseListener mouseListener) {
         this.mouseListener = mouseListener;
     }
     
