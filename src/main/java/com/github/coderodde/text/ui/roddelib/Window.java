@@ -196,6 +196,23 @@ public class Window extends AbstractWidget {
         }
     }
     
+    public void addMenusToDepthBar(MenuBar menuBar,
+                                   int startX,
+                                   int y, 
+                                   int offsetX) {
+        for (int x = offsetX, i = 0; 
+                x < menuBar.getTotalMenusLength() 
+                    && i < menuBar.children.size();
+                x++, i++) {
+            
+            Menu menu = (Menu) menuBar.children.get(i);
+            
+            if (menu.containsPoint(x, y)) {
+                depthBuffer[y][x].add(menu);
+            }
+        }
+    }
+    
     public MenuBar getMenuBar() {
         return menuBar;
     }

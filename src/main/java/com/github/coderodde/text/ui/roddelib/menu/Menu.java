@@ -96,6 +96,4 @@ public class Menu extends AbstractWidget {
     public void setHovered(boolean hovered) {
         this.hovered = hovered;
     }
-    
-    
 }

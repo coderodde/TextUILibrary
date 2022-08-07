@@ -324,16 +324,22 @@ public class MenuBar extends AbstractWidget {
     }
     
     private void printSimpleMenuBar() {
-        TextCanvas windowImpl = 
-                ((Window) parentWidget).getTextCanvas();
+        TextCanvas canvasImpl = ((Window) parentWidget).getTextCanvas();
         
         int matrixX = scrollX;
         int windowX = 0;
         
+        canvasImpl.setForegroundColor(foregroundColorMatrix[0][matrixX]);
+        canvasImpl.setBackgroundColor(backgroundColorMatrix[0][matrixX]);
+        
+        // Clear the menu bar:
+        for (int x = 0; x < getWidth(); x++) {
+            canvasImpl.setChar(x, 0, ' ');
+        }
+        
+        // Paint the menu bar: 
         for (int i = 0; i < getWidth(); i++, matrixX++, windowX++) {
-            windowImpl.setForegroundColor(foregroundColorMatrix[0][matrixX]);
-            windowImpl.setBackgroundColor(backgroundColorMatrix[0][matrixX]);
-            windowImpl.setChar(windowX, 0, charMatrix[0][matrixX]);
+            canvasImpl.setChar(windowX, 0, charMatrix[0][matrixX]);
         }
     }
     
@@ -449,6 +455,11 @@ public class MenuBar extends AbstractWidget {
         }
         
         charMatrix[0][width - 1] = borderChar;
+    }
+    
+    private void setDepthBuffer() {
+        Window window = (Window) parentWidget;
+        window.addMenuBarToDepthBuffer(this, width, height);
     }
     
     private void buildBottomBorder(int y) {
@@ -580,7 +591,7 @@ public class MenuBar extends AbstractWidget {
     public void addMenu(Menu menu) {
         Objects.requireNonNull(menu, "The input Menu is null.");
         
-        int startX = getTotalMenusLength();
+        int startX;
         int startY;
          
         if (menuBarBorder == null || 
@@ -588,6 +599,20 @@ public class MenuBar extends AbstractWidget {
             startY = 0;
         } else {
             startY = 1;
+        }
+        
+        if (menuBarBorder == null || menuBarBorder.noActualBorder()) {
+            if (children.isEmpty()) {
+                startX = 0;
+            } else {
+                startX = getTotalMenusLength() + 1;
+            }
+        } else {
+            if (children.isEmpty()) {
+                startX = 1;
+            } else {
+                startX = getTotalMenusLength() + 1;
+            }
         }
         
         menu.setParentOffsetX(startX);
@@ -619,7 +644,7 @@ public class MenuBar extends AbstractWidget {
         return menuList;
     }
     
-    private int getTotalMenusLength() {
+    public int getTotalMenusLength() {
         if (children.isEmpty()) {
             return 0;
         }
@@ -645,6 +670,8 @@ public class MenuBar extends AbstractWidget {
         private volatile int currentCursorX;
         private volatile int currentCursorY;
         
+        private Menu previouslyHoveredMenu;
+        
         Point getCurrentCursorPoint() {
             return new Point(currentCursorX, currentCursorY);
         }
@@ -655,9 +682,14 @@ public class MenuBar extends AbstractWidget {
             previousCursorX = currentCursorX;
             previousCursorY = currentCursorY;
             
+            Menu targetMenu = getMenuViaPoint(charX, charY);
+            
+            if (targetMenu != null) {
+                System.out.println(targetMenu.getMenuText());
+            }
+            
             currentCursorX = charX;
             currentCursorY = charY;
-            
         }
         
         private Menu getMenuViaPoint(int charX, int charY) {
@@ -690,9 +722,9 @@ public class MenuBar extends AbstractWidget {
         
         @Override
         public void onMouseExited(MouseEvent mouseEvent, int charX, int charY) {
-//            if (!MenuBar.this.containsPoint(charX, charY)) {
-//                return;
-//            }
+            if (!MenuBar.this.containsPoint(charX, charY)) {
+                return;
+            }
             
             System.out.println("exited: x = " + charX + ", y = " + charY);
             Window window = (Window) parentWidget;
@@ -711,19 +743,31 @@ public class MenuBar extends AbstractWidget {
         
         @Override
         public void onMouseMoved(MouseEvent mouseEvent, int charX, int charY) {
+            System.out.println("MenuBar.onMouseMoved");
 //            handlePreviousCursor();
             
             if (!MenuBar.this.containsPoint(charX, charY)) {
+                System.out.println("exitting method");
                 return;
             }
             
-            Menu targetMenu = getMenuViaPoint(charX, charY);
+            Menu targetMenu = getMenuViaPoint(charX + scrollX, charY);
             
             if (targetMenu == null) {
                 return;
             }
             
+            System.out.println("DEBUG: " + targetMenu.getMenuText());
+            
             Window window = (Window) parentWidget;
+            
+            // Turn off the hover status from all the menus:
+            for (AbstractWidget menuWidget : children) {
+                Menu menu = (Menu) menuWidget;
+                menu.setHovered(false);
+            }
+            
+            // Hover the target menu:
             targetMenu.setHovered(true);
             
             window.getTextCanvas().setForegroundColor(onHoverForegroundColor);
@@ -790,6 +834,7 @@ public class MenuBar extends AbstractWidget {
                 
                 scrollX += charsToScroll;
                 normalizeScrollX();
+                MenuBar.this.setDepthBuffer();
                 MenuBar.this.printSimpleMenuBar();
                 window.paint();
             }
